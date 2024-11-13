@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Home{% endblock %}</title>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-indigo-500 text-white p-4">
+        <div class="container mx-auto flex justify-between">
+            <a href="{% url 'home' %}" class="font-semibold">Home</a>
+            <div class="space-x-4">
+                <a href="{% url 'diary' %}">Diary</a>
+                <a href="{% url 'counsel' %}">Counsel</a>
+                <a href="{% url 'profile' %}">Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container mx-auto py-6">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>
