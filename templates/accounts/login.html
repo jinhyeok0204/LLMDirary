@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Diary</title>
+    <link rel="stylesheet" href="{% static 'output.css' %}">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-200 min-h-screen flex items-center justify-center">
+        <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg relative">
+        <!-- 로고 영역 -->
+        <div class="flex justify-center mb-4">
+            <img src="{% static 'images/llmdiary_logo.png' %}" alt="LLMDiary Logo" class="w-16 h-16">
+        </div>
+        
+    <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-bold text-center text-blue-600 mb-2">LLM Diary</h2>
+        <p class="text-center text-gray-500 mb-6">Log in to your account</p>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <p class="text-red-500 text-center">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="{% url 'login' %}" method="post" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label for="login_id" class="block text-sm font-medium text-gray-700">ID</label>
+                <input type="text" name="login_id" id="login_id" required class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="login_pw" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="login_pw" id="login_pw" required class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300">Login</button>
+            </div>
+        </form>
+        <p class="mt-6 text-center text-gray-600">
+            Don't have an account?
+            <a href="{% url 'signup' %}" class="text-blue-500 font-semibold hover:underline">Sign up</a>
+        </p>
+    </div>
+
+</body>
+</html>

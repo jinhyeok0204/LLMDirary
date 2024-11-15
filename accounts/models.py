@@ -20,7 +20,7 @@ class Person(models.Model):
     login_pw = models.CharField(max_length=15)
     phone_num = models.CharField(max_length=15, null=True, blank=True)
     registration_date = models.DateField(auto_now_add=True)
-    role = models.CharField(max_length=15, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=25, choices=ROLE_CHOICES)
 
     def __str__(self):
         return f"self.name ({self.get_role_display()})"

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%  load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{% static 'output.css' %}">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Sign Up</h2>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <p class="text-red-500 text-center">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form action="{% url 'signup' %}" method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" name="username" id="username" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password" id="password" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+            </div>
+            <div>
+                <label for="password_confirm" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input type="password" name="password_confirm" id="password_confirm" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+            </div>
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+                <select name="role" id="role" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+                    <option value="user">User</option>
+                    <option value="counselor">Counselor</option>
+                    <option value="customer_support">Customer Support</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition duration-300">Sign Up</button>
+            </div>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Log in</a>
+        </p>
+    </div>
+</body>
+</html>

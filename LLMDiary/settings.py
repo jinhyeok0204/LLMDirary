@@ -126,9 +126,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.LoginIdAuthBackend',  # 커스텀 인증 백엔드 (login_id와 login_pw 사용)
+    'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
+]
+
+import os
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/css')]
