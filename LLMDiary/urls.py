@@ -22,7 +22,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")), # accounts 앱의 URL 포함
     path("", include('home.urls')), # 기본 URL을 home 앱으로 연결
-    path("diary/", include('diary.urls')),
-    path("counsel/", include('counsel.urls'))
+    # path("diary/", include('diary.urls')),
+    # path("counsel/", include('counsel.urls'))
 
 ]
