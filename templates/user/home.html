@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Home</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-blue-200 min-h-screen flex flex-col">
+    <header class="bg-blue-600 text-white py-4">
+        <h1 class="text-center text-2xl font-bold">Welcome to LLMDiary</h1>
+    </header>
+
+    <main class="flex-1 container mx-auto p-6">
+        <h2 class="text-xl font-semibold mb-4">Hello, {{ request.user.name }}</h2>
+        <p class="text-gray-600">Start writing your diary or check your emotional analytics.</p>
+
+    </main>
+</body>
+</html>

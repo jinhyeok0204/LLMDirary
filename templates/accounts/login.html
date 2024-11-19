@@ -4,45 +4,56 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM Diary</title>
-    <link rel="stylesheet" href="{% static 'output.css' %}">
+    <title>LLM Diary - Login</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-blue-200 min-h-screen flex items-center justify-center">
-        <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg relative">
-        <!-- 로고 영역 -->
-        <div class="flex justify-center mb-4">
-            <img src="{% static 'images/llmdiary_logo.png' %}" alt="LLMDiary Logo" class="w-16 h-16">
-        </div>
-        
-    <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg">
-        <h2 class="text-2xl font-bold text-center text-blue-600 mb-2">LLM Diary</h2>
-        <p class="text-center text-gray-500 mb-6">Log in to your account</p>
+<body class="bg-gradient-to-br from-pink-100 via-blue-100 to-purple-100 min-h-screen flex items-center justify-center">
 
+    <!-- 로그인 카드 -->
+    <div class="bg-white w-full max-w-lg p-8 rounded-xl shadow-lg border border-gray-200">
+        <!-- 로고와 타이틀 -->
+        <div class="text-center mb-8">
+            <img src="{% static 'images/llmdiary_logo.png' %}" alt="LLMDiary Logo" class="w-20 h-20 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-purple-600">Welcome Back</h1>
+            <p class="text-gray-600 mt-2">Log in to your LLM Diary account</p>
+        </div>
+
+        <!-- 메시지 표시 -->
         {% if messages %}
-            <div class="mb-4">
+            <div class="mb-6">
                 {% for message in messages %}
-                    <p class="text-red-500 text-center">{{ message }}</p>
+                    <p class="text-red-500 text-center font-semibold">{{ message }}</p>
                 {% endfor %}
             </div>
         {% endif %}
 
+        <!-- 로그인 폼 -->
         <form action="{% url 'login' %}" method="post" class="space-y-6">
             {% csrf_token %}
+            <!-- ID 입력 -->
             <div>
-                <label for="login_id" class="block text-sm font-medium text-gray-700">ID</label>
-                <input type="text" name="login_id" id="login_id" required class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="login_id" class="block text-sm font-medium text-gray-700">Login ID</label>
+                <input type="text" name="login_id" id="login_id" required placeholder="아이디를 입력하세요"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
             </div>
+            <!-- 비밀번호 입력 -->
             <div>
                 <label for="login_pw" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="login_pw" id="login_pw" required class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" name="login_pw" id="login_pw" required placeholder="비밀번호를 입력하세요"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-purple-400 focus:border-purple-400 bg-white text-gray-800 shadow-sm">
             </div>
+            <!-- 로그인 버튼 -->
             <div>
-                <button type="submit" class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300">Login</button>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-700 transition duration-300 shadow-lg">
+                    Login
+                </button>
             </div>
         </form>
-        <p class="mt-6 text-center text-gray-600">
+
+        <!-- 회원가입 링크 -->
+        <p class="mt-6 text-center text-gray-600 text-sm">
             Don't have an account?
-            <a href="{% url 'signup' %}" class="text-blue-500 font-semibold hover:underline">Sign up</a>
+            <a href="{% url 'signup' %}" class="text-purple-600 font-semibold hover:underline">Sign up</a>
         </p>
     </div>
 

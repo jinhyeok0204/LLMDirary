@@ -1,55 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {%  load static %}
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="{% static 'output.css' %}">
+    <title>Sign Up - LLM Diary</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Sign Up</h2>
+<body class="bg-gradient-to-br from-pink-100 via-blue-100 to-purple-100 min-h-screen flex items-center justify-center">
 
+    <!-- 회원가입 카드 -->
+    <div class="bg-white w-full max-w-lg p-8 rounded-xl shadow-lg border border-gray-200">
+        <!-- 로고와 타이틀 -->
+        <div class="text-center mb-8">
+            <img src="{% static 'images/llmdiary_logo.png' %}" alt="LLMDiary Logo" class="w-20 h-20 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-purple-600">Create Your Account</h1>
+            <p class="text-gray-600 mt-2">Sign up to use LLM Diary</p>
+        </div>
+
+        <!-- 메시지 표시 -->
         {% if messages %}
-            <div class="mb-4">
+            <div class="mb-6">
                 {% for message in messages %}
-                    <p class="text-red-500 text-center">{{ message }}</p>
+                    <p class="text-red-500 text-center font-semibold">{{ message }}</p>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <form action="{% url 'signup' %}" method="post" class="space-y-4">
+        <!-- 회원가입 폼 -->
+        <form action="{% url 'signup' %}" method="post" class="space-y-6">
             {% csrf_token %}
+            <!-- 이름 -->
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                <input type="text" name="username" id="username" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" name="name" id="name" required placeholder="홍길동"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
             </div>
+            <!-- 로그인 ID -->
+            <div>
+                <label for="login_id" class="block text-sm font-medium text-gray-700">Login ID</label>
+                <input type="text" name="login_id" id="login_id" required placeholder="아이디를 입력하세요"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
+            </div>
+            <!-- 비밀번호 -->
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="password" id="password" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+                <input type="password" name="password" id="password" required placeholder="비밀번호를 입력하세요"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-purple-400 focus:border-purple-400 bg-white text-gray-800 shadow-sm">
             </div>
+            <!-- 비밀번호 확인 -->
             <div>
                 <label for="password_confirm" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-                <input type="password" name="password_confirm" id="password_confirm" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+                <input type="password" name="password_confirm" id="password_confirm" required placeholder="비밀번호를 다시 입력하세요"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-purple-400 focus:border-purple-400 bg-white text-gray-800 shadow-sm">
             </div>
+            <!-- 핸드폰 번호 -->
+            <div>
+                <label for="phone_num" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input type="tel" name="phone_num" id="phone_num" required placeholder="010-1234-5678"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
+            </div>
+            <!-- 역할 -->
             <div>
                 <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
-                <select name="role" id="role" required class="mt-1 px-3 py-2 bg-gray-100 border rounded-md w-full">
+                <select name="role" id="role" required
+                        class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
+                    <option disabled selected>선택 하세요</option>
                     <option value="user">User</option>
                     <option value="counselor">Counselor</option>
                     <option value="customer_support">Customer Support</option>
                     <option value="admin">Admin</option>
                 </select>
             </div>
+            <!-- 추가 필드: 생년월일 (User만 표시) -->
+            <div id="birth_field" class="hidden">
+                <label for="birth" class="block text-sm font-medium text-gray-700">Birth Date</label>
+                <input type="date" name="birth" id="birth"
+                       class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
+            </div>
+            <!-- 추가 필드: 성별 (User와 Counselor만 표시) -->
+            <div id="gender_field" class="hidden">
+                <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                <select name="gender" id="gender"
+                        class="mt-1 px-4 py-3 border border-gray-300 rounded-lg w-full focus:ring-blue-400 focus:border-blue-400 bg-white text-gray-800 shadow-sm">
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+            </div>
+            <!-- 가입 버튼 -->
             <div>
-                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition duration-300">Sign Up</button>
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-purple-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-700 transition duration-300 shadow-lg">
+                    Sign Up
+                </button>
             </div>
         </form>
-        <p class="mt-4 text-center text-sm text-gray-600">
+        <p class="mt-6 text-center text-gray-600 text-sm">
             Already have an account?
-            <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Log in</a>
+            <a href="{% url 'login' %}" class="text-purple-600 font-semibold hover:underline">Log in</a>
         </p>
     </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.getElementById("role").addEventListener("change", function () {
+            const role = this.value;
+            const birthField = document.getElementById("birth_field");
+            const genderField = document.getElementById("gender_field");
+
+            // 초기화
+            birthField.classList.add("hidden");
+            genderField.classList.add("hidden");
+
+            // 조건별 표시
+            if (role === "user") {
+                birthField.classList.remove("hidden");
+                genderField.classList.remove("hidden");
+            } else if (role === "counselor") {
+                genderField.classList.remove("hidden");
+            }
+        });
+    </script>
+
 </body>
 </html>
