@@ -27,8 +27,8 @@ def login_view(request):
                     return redirect('customer_support_dashboard')
                 elif person.role == 'counselor':
                     return redirect('counselor_dashboard')
-                else:
-                    return redirect('user_home')
+                else: # user
+                    return redirect('home')
             except Person.DoesNotExist:
                 messages.error(request, "사용자 정보에 문제가 있습니다.")
                 return redirect('login')
@@ -119,6 +119,7 @@ def user_home(request):
 # 관리자 대시보드 (Admin 전용)
 @login_required
 def admin_dashboard(request):
+    person = request.user
     person = Person.objects.get(id=request.user.id)
     if not person.is_admin():
         return HttpResponseForbidden("관리자만 접근 가능합니다.")

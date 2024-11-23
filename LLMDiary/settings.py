@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     "analysis",
     "counsel",
     "diary",
-    "diary_calendar",
     "home",
+    "profiles",
+    "community"
 ]
 
 MIDDLEWARE = [

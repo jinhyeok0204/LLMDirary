@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LLM Diary{% endblock %}</title>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen flex flex-col">
+    <!-- 네비게이션 바 -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-2xl font-bold text-indigo-500">LLM Diary</a>
+            <div class="flex space-x-6">
+                <a href="{% url 'diary' %}" class="text-gray-700 hover:text-indigo-500">Diary</a>
+                <a href="{% url 'counsel' %}" class="text-gray-700 hover:text-indigo-500">Counsel</a>
+                <a href="{% url 'profile' %}" class="text-gray-700 hover:text-indigo-500">Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-grow container mx-auto py-10">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-white shadow-md text-center py-4 mt-10">
+        <p class="text-sm text-gray-500">© 2024 LLM Diary. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
