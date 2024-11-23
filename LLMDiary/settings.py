@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     "analysis",
     "counsel",
     "diary",
-    "diary_calendar",
     "home",
+    "profiles",
+    "community"
 ]
 
 MIDDLEWARE = [
@@ -126,7 +127,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -138,5 +138,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
 ]
 
-import os
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/css')]
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+AUTH_USER_MODEL = 'accounts.Person'

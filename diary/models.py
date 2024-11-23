@@ -25,7 +25,7 @@ class Diary(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='diaries')
     diary_date = models.DateField() # 일기의 날짜
     diary_write_date = models.DateField(auto_now_add=True) # 작성하는 날짜
-
+    emotion_analysis = models.OneToOneField(EmotionAnalysis, on_delete=models.CASCADE, related_name='diary', null=True, blank=True)
     def clean(self):
         # diary_date가 diary_write_date보다 클 경우 ValidationError 발생.
         if self.diary_date > self.diary_write_date:

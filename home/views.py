@@ -1,16 +1,33 @@
 from django.shortcuts import render
+from accounts.models import User, Person
+from diary.models import Diary
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
 
-
+@login_required(redirect_field_name='login')
 def home_view(request):
+    user = request.user
 
-    recent_diaries = Diary.objects.filter(user=request.user).order_by('-date')[:5]
-    emotion_statistics = get_emotion_statistics(request.user)
-    calendar_days = get_diary_calendar(request.user)
+    recent_diaries = Diary.objects.filter(user_id=user.id).order_by('-diary_write_date')[:5]
+    # 감정 통계 데이터
+    emotion_stats = (
+        Diary.objects.filter(user_id=user.id)
+        .values('emotion_analysis__happiness_score', 'emotion_analysis__anger_score',
+                'emotion_analysis__sadness_score', 'emotion_analysis__surprise_score')
+        .all()
+    )
 
-    return render(request, 'home/home.html', {
-        'recent_diaries' : recent_diaries,
-        'emotion_statistics' : emotion_statistics,
-        'calendar_days': calendar_days
+    # 총합 계산
+    emotion_totals = {
+        "happiness": sum(e["emotion_analysis__happiness_score"] for e in emotion_stats),
+        "anger": sum(e["emotion_analysis__anger_score"] for e in emotion_stats),
+        "sadness": sum(e["emotion_analysis__sadness_score"] for e in emotion_stats),
+        "expected": sum(e["emotion_analysis__surprise_score"] for e in emotion_stats),
+    }
+
+    return render(request, "user/home.html", {
+        "user": user,
+        "recent_diaries": recent_diaries,
+        "emotion_totals": emotion_totals,
     })
+
