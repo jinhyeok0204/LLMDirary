@@ -7,8 +7,10 @@ from accounts.models import User, Person
 
 @login_required(redirect_field_name='login')
 def password_check_view(request):
+    user = request.user
+
     if request.method == 'POST':
-        login_id = request.session['login_id']
+        login_id = user.login_id
         login_pw = request.POST['login_pw']
         user = authenticate(request, login_id=login_id, password=login_pw)
 

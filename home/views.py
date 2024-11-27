@@ -30,4 +30,3 @@ def home_view(request):
         "recent_diaries": recent_diaries,
         "emotion_totals": emotion_totals,
     })
-

@@ -26,4 +26,5 @@ urlpatterns = [
     path("counsel/", include('counsel.urls')),
     path("profile/", include('profiles.urls')),
     path("community/", include('community.urls'))
+    #path(password-change-done)
 ]
