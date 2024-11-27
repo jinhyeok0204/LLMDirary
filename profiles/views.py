@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from django.contrib.auth.views import PasswordChangeView
+from .forms import CustomPasswordChangeForm
 
 from accounts.models import User, Person
 
@@ -33,3 +35,7 @@ def profile_home(request):
         "userdata": userdata,
     })
 
+class CustomPasswordChangeView(PasswordChangeView):
+    form_class = CustomPasswordChangeForm
+    template_name = 'profile/password_change.html'
+    success_url = '/profile/password-change-done/'

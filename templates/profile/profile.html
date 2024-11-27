@@ -20,7 +20,7 @@
         <nav class="mt-10 w-full px-4">
             <ul class="space-y-6">
                 <li>
-                    <a href="{% url 'profile' %}" class="block w-full py-3 px-4 text-center text-gray-700 bg-gray-50 hover:bg-purple-100 hover:text-purple-700 rounded-lg shadow-sm transition">
+                    <a href="{% url 'profile' %}" class="block w-full py-3 px-4 text-center text-gray-700 bg-gray-50 hover:bg-purple-100 hover:text-purple-700 rounded-lg shadow-sm transition font-bold">
                         Profile
                     </a>
                 </li>
@@ -72,7 +72,12 @@
                 </div>
                 <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
                     <span class="font-semibold text-purple-700 w-1/3">성별</span>
-                    <p class="text-gray-800">{{ userdata.gender }}</p>
+                    <p class="text-gray-800"> 
+                        {% if userdata.gender == "M" %} 남자
+                        {% elif userdata.gender == "F" %} 여자 
+                        {% else %} 기타 
+                        {% endif %}
+                    </p>
                 </div>
                 <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
                     <span class="font-semibold text-purple-700 w-1/3">핸드폰 번호</span>
