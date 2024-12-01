@@ -1,40 +1,139 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="container bg-white rounded-lg shadow-lg mx-auto p-8">
-        <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">상담 신청</h1>
+<div class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">상담 신청</h1>
+    <p class="text-gray-600 mb-8 text-center">신청하고 싶은 상담사를 선택하세요!</p>
 
-        <!-- 상담사 명단 -->
-        <table class="w-full table-auto border-collapse">
-            <thead>
-                <tr class="bg-white-100">
-                    <th class="border border-black-200 py-2 px-4">상담사 이름</th>
-                    <th class="border border-black-200 py-2 px-4">성별</th>
-                    <th class="border border-black-200 py-2 px-4">신청</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for counselor in counselors %}
-                <tr class="bg-white hover:bg-purple-50">
-                    <td class="border border-black-200 py-2 px-4 text-center">{{ counselor.id.name }}</td>
-                    <td class="border border-black-200 py-2 px-4 text-center">
-                        {{ counselor.id.get_gender_display }}
-                    </td>
-                    <td class="border border-purple-200 py-2 px-4 text-center">
-                        <form action="{% url 'counsel_apply' %}" method="get">
+    <div class="flex">
+        <!-- 왼쪽: 상담 내역 -->
+        <div class="w-1/2 pr-4">
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">내 상담 내역</h2>
+            <div class="bg-white shadow rounded-lg p-4">
+                {% for counsel in counsels %}
+                <div class="border-b pb-2 mb-2">
+                    <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }}</p>
+                    <p class="text-gray-800">상담 날짜: {{ counsel.counsel_date|date:"Y년 m월 d일" }}</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-500">상담 내역이 없습니다.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 오른쪽: 상담사 목록 -->
+        <div class="w-1/2 pl-4">
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">상담사 목록</h2>
+            <div id="counselor-list" class="space-y-6">
+                {% for counselor in page_obj %}
+                <div class="bg-white shadow rounded-lg p-4 flex justify-between items-center">
+                    <div class="flex-1">
+                        <p class="text-lg font-bold text-purple-700">{{ forloop.counter0|add:1 }}. {{ counselor.id.name }}{% if counselor.gender == "M" %} (남자){% elif counselor.gender == "F" %} (여자){% endif %}</p>
+                    </div>
+                    <div>
+                        <form action="{% url 'counsel_apply' %}" method="post">
+                            {% csrf_token %}
                             <input type="hidden" name="counselor_id" value="{{ counselor.id.id }}">
                             <button type="submit" class="bg-purple-500 text-white py-1 px-4 rounded hover:bg-purple-600 transition">
                                 상담 신청
                             </button>
                         </form>
-                    </td>
-                </tr>
+                    </div>
+                </div>
                 {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center text-gray-500 py-4">등록된 상담사가 없습니다.</td>
-                </tr>
+                <div class="text-center text-gray-500 py-4">등록된 상담사가 없습니다.</div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="mt-8 flex justify-center space-x-2">
+                <button id="prev-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if page_obj.has_previous %}
+                            data-page="{{ page_obj.previous_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    이전
+                </button>
+
+                <span class="px-4 py-2 bg-gray-100 rounded">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+                <button id="next-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if page_obj.has_next %}
+                            data-page="{{ page_obj.next_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    다음
+                </button>
+            </div>
+        </div>
     </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#prev-btn, #next-btn').click(function() {
+        // 버튼이 비활성화된 경우 클릭 이벤트를 무시
+        if ($(this).is(':disabled')) {
+            return; // 아무 작업도 하지 않음
+        }
+
+        var page = $(this).data('page'); // 버튼의 data-page 속성에서 페이지 번호 가져오기
+        console.log("페이지 요청:", page); // 페이지 요청 로그 추가
+
+        if (page) { // 페이지가 정의되어 있는지 확인
+            $.ajax({
+                url: '?page=' + page, // AJAX 요청 URL
+                type: 'GET',
+                success: function(data) {
+                    $('#counselor-list').empty();  // 기존 목록 비우기
+                    data.counselors.forEach(function(counselor) {
+                        $('#counselor-list').append(`
+                            <div class="bg-white shadow rounded-lg p-4 flex justify-between items-center">
+                                <div class="flex-1">
+                                    <p class="text-lg font-bold text-purple-700">${data.current_page}. ${counselor.name} (${counselor.gender})</p>
+                                </div>
+                                <div>
+                                    <form action="{% url 'counsel_apply' %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="counselor_id" value="${counselor.id}">
+                                        <button type="submit" class="bg-purple-500 text-white py-1 px-4 rounded hover:bg-purple-600 transition">
+                                            상담 신청
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        `);
+                    });
+
+                    // 페이지네이션 버튼 업데이트
+                    var currentPage = data.current_page; // 현재 페이지
+                    var totalPages = data.total_pages; // 총 페이지 수
+
+                    // 이전 버튼 활성화/비활성화
+                    if (currentPage > 1) {
+                        $('#prev-btn').data('page', currentPage - 1).prop('disabled', false);
+                    } else {
+                        $('#prev-btn').prop('disabled', true);
+                    }
+
+                    // 다음 버튼 활성화/비활성화
+                    if (currentPage < totalPages) {
+                        $('#next-btn').data('page', currentPage + 1).prop('disabled', false);
+                    } else {
+                        $('#next-btn').prop('disabled', true);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX 요청 실패:", error);
+                }
+            });
+        }
+    });
+});
+</script>
+
 {% endblock %}
