@@ -17,7 +17,7 @@ def login_view(request):
             # 로그인 성공
             login(request, user)
             messages.success(request, "로그인에 성공했습니다.")
-            request.session['user_id'] = user.id
+            #request.session['user_id'] = user.id
 
             # 역할에 따른 redirect
             try:

@@ -54,7 +54,7 @@ class Person(AbstractBaseUser, PermissionsMixin):
     objects = PersonManager()
 
     def __str__(self):
-        return f"{self.name} ({self.get_role_display()})"
+        return f"{self.name} ({self.login_id}, {self.get_role_display()})"
 
 
 class Counselor(models.Model):

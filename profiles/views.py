@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib import messages
+from django.contrib.auth.views import PasswordChangeView
+from .forms import CustomPasswordChangeForm
 
 from accounts.models import User, Person
 
 @login_required(redirect_field_name='login')
 def password_check_view(request):
+    user = request.user
+
     if request.method == 'POST':
-        login_id = request.session['login_id']
+        login_id = user.login_id
         login_pw = request.POST['login_pw']
         user = authenticate(request, login_id=login_id, password=login_pw)
 
@@ -31,3 +35,7 @@ def profile_home(request):
         "userdata": userdata,
     })
 
+class CustomPasswordChangeView(PasswordChangeView):
+    form_class = CustomPasswordChangeForm
+    template_name = 'profile/password_change.html'
+    success_url = '/profile/password-change-done/'
