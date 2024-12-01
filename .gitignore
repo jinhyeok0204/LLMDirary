@@ -4,5 +4,3 @@ node_modules
 */*/__pycache__/
 __pycache__/
 *.pyc
-accounts/__pycache__/g
-home/__pycache__/
