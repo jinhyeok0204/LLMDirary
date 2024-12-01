@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-8">
+    <div class="container bg-white rounded-lg shadow-lg mx-auto p-8">
         <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">상담 신청</h1>
 
         <!-- 상담사 명단 -->
         <table class="w-full table-auto border-collapse">
             <thead>
-                <tr class="bg-purple-100">
-                    <th class="border border-purple-200 py-2 px-4">상담사 이름</th>
-                    <th class="border border-purple-200 py-2 px-4">성별</th>
-                    <th class="border border-purple-200 py-2 px-4">신청</th>
+                <tr class="bg-white-100">
+                    <th class="border border-black-200 py-2 px-4">상담사 이름</th>
+                    <th class="border border-black-200 py-2 px-4">성별</th>
+                    <th class="border border-black-200 py-2 px-4">신청</th>
                 </tr>
             </thead>
             <tbody>
                 {% for counselor in counselors %}
                 <tr class="bg-white hover:bg-purple-50">
-                    <td class="border border-purple-200 py-2 px-4 text-center">{{ counselor.id.name }}</td>
-                    <td class="border border-purple-200 py-2 px-4 text-center">
+                    <td class="border border-black-200 py-2 px-4 text-center">{{ counselor.id.name }}</td>
+                    <td class="border border-black-200 py-2 px-4 text-center">
                         {{ counselor.id.get_gender_display }}
                     </td>
                     <td class="border border-purple-200 py-2 px-4 text-center">

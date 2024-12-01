@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-8">
-        <h1>상담 신청 페이지</h1>
-        <form method="POST">
-            {% csrf_token %}
-            <label for="appointment_date">상담 날짜 선택:</label>
-            <input type="date" name="appointment_date" id="appointment_date" required>
-            <input type="hidden" name="counselor_id" value="{{ request.GET.counselor_id }}">
-            <button type="submit">신청하기</button>
-        </form>
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-[50vw]">
+            <h1>상담 신청 페이지</h1>
+            <form method="POST">
+                {% csrf_token %}
+                <label for="appointment_date">상담 날짜 선택:</label>
+                <input type="date" name="appointment_date" id="appointment_date" required>
+                <input type="hidden" name="counselor_id" value="{{ request.GET.counselor_id }}">
+                <button type="submit">신청하기</button>
+            </form>
+        </div>
     </div>
 {% endblock %}
