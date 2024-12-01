@@ -65,9 +65,29 @@
             </ul>
         </nav>
     </aside>
-
         <!-- Main Content -->
         <main class="flex-grow p-8">
+        {% if messages %}
+        <div id = 'message-container' class="fixed top-5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-md w-full px-4">
+            {% for message in messages %}
+            <div class="rounded-md shadow-lg px-4 py-3 mb-4 text-white text-center
+                    {% if message.tags == 'success' %} bg-green-500 {% elif message.tags == 'error' %} bg-red-500 {% elif message.tags == 'info' %} bg-blue-500 {% else %} bg-gray-500 {% endif %}">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+            <script>
+                // 메시지 박스 3초 후 자동 삭제
+                setTimeout(() => {
+                    const messageContainer = document.getElementById('message-container');
+                    if (messageContainer) {
+                        messageContainer.style.transition = 'opacity 0.5s';
+                        messageContainer.style.opacity = '0';
+                        setTimeout(() => messageContainer.remove(), 500); // 애니메이션 후 삭제
+                    }
+                }, 3000);
+            </script>
+        {% endif %}
             {% block content %}
             <!-- 페이지별 내용이 여기에 삽입됩니다 -->
             {% endblock %}

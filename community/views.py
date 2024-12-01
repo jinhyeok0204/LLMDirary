@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from .forms import PostForm, PostCommentForm
-from .models import Post
-
+from .models import Post, PostComment
+from django.contrib import messages
 
 @login_required(redirect_field_name='login')
 def community_home_view(request):
@@ -63,6 +63,7 @@ def community_detail_view(request, post_id):
     }
     return render(request, "community/community_detail.html", context)
 
+
 @login_required(redirect_field_name='login')
 def post_delete_view(request, post_id):
     '''
@@ -78,3 +79,18 @@ def post_delete_view(request, post_id):
     if request.method == 'POST':
         post.delete()
         return redirect('community_home')
+
+
+@login_required(redirect_field_name='login')
+def comment_delete_view(request, post_id, comment_id):
+    '''
+    댓글 삭제 뷰
+    '''
+    comment = get_object_or_404(PostComment, pk=comment_id, post__post_id=post_id)
+
+    if comment.user.id.id == request.user.id:
+        comment.delete()
+        messages.success(request, "댓글이 성공적으로 삭제되었습니다.")
+    else:
+        messages.error(request, "댓글 삭제 권한이 없습니다.")
+    return redirect('community_detail', post_id=post_id)
