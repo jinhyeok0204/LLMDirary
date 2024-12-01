@@ -22,7 +22,9 @@
         {% if messages %}
             <div class="mb-6">
                 {% for message in messages %}
-                    <p class="text-red-500 text-center font-semibold">{{ message }}</p>
+                    {% if "로그인에 성공했습니다." in message %}
+                        <p class="text-red-500 text-center font-semibold">{{ message }}</p>
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endif %}

@@ -137,3 +137,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 AUTH_USER_MODEL = 'accounts.Person'
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',  # 개발 환경
+]
