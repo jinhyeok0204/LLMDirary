@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import Person, User
+from django.utils.timezone import now
 
 
 class Post(models.Model):
