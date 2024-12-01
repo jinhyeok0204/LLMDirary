@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>상담 신청</title>
+</head>
+<body>
+    <h1>상담 신청 페이지</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="appointment_date">상담 날짜 선택:</label>
+        <input type="date" name="appointment_date" id="appointment_date" required>
+        <input type="hidden" name="counselor_id" value="{{ request.GET.counselor_id }}">
+        <button type="submit">신청하기</button>
+    </form>
+</body>
+</html>
