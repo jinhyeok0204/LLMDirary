@@ -37,7 +37,7 @@ def profile_home(request):
         "userdata": userdata,
     })
 
-@login_required(redirect_field_name='login')
+
 class CustomPasswordChangeView(PasswordChangeView):
     form_class = CustomPasswordChangeForm
     template_name = 'profile/password_change.html'
