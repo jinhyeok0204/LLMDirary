@@ -15,7 +15,6 @@ def counsel_home(request):
         'counselors': counselors,
     })
 
-
 @login_required(redirect_field_name='login')
 def counsel_apply(request):
     user = request.user

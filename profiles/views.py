@@ -22,6 +22,8 @@ def password_check_view(request):
             messages.error(request, "비밀번호가 올바르지 않습니다.")  # 오류 메시지 추가
 
     return render(request, "profile/password_check.html")
+
+@login_required(redirect_field_name='login')
 def profile_home(request):
     user = request.user
 
@@ -35,6 +37,7 @@ def profile_home(request):
         "userdata": userdata,
     })
 
+@login_required(redirect_field_name='login')
 class CustomPasswordChangeView(PasswordChangeView):
     form_class = CustomPasswordChangeForm
     template_name = 'profile/password_change.html'
