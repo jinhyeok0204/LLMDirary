@@ -18,7 +18,7 @@
         <!-- 게시글 내용 -->
         <h1 class="text-3xl font-bold text-purple-700">{{ post.post_title }}</h1>
         <p class="text-gray-600 mt-2">
-            by <strong>{{ post.post_publisher.login_id }}</strong> on {{ post.post_write_date }}
+            by <strong>{{ post.post_publisher.login_id }}</strong> on {{ post.post_write_datetime|date:"Y년 m월 d일 H:i:s" }}
         </p>
         <p class="text-gray-800 mt-4">{{ post.post_content }}</p>
     </div>
@@ -30,7 +30,7 @@
             {% for comment in comments %}
             <li class="bg-white rounded-lg shadow p-4">
                 <p class="text-gray-800"><strong>{{ comment.user.id.login_id }}</strong>: {{ comment.post_comment_content }}</p>
-                <p class="text-sm text-gray-500">{{ comment.post_comment_write_date }}</p>
+                <p class="text-sm text-gray-500">{{ comment.post_comment_write_datetime|date:"Y년 m월 d일 H:i:s" }}</p>
             </li>
             {% empty %}
             <li class="text-gray-500">댓글이 없습니다. 첫 댓글을 작성해보세요!</li>

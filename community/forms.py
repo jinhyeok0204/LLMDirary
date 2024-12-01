@@ -7,9 +7,9 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['post_title', 'post_content']  # 사용자가 입력할 필드
         widgets = {
-            'post_title' : forms.TextInput(attrs={
+            'post_title': forms.TextInput(attrs={
                 'class': "w-full p-2 border border-gray-300 rounded-lg",
-                'placeholder' : 'Enter the post title',
+                'placeholder': 'Enter the post title',
             }),
 
             'post_content': forms.Textarea(attrs={
@@ -31,7 +31,7 @@ class PostCommentForm(forms.ModelForm):
         widgets = {
             'post_comment_content': forms.Textarea(attrs={
                 'class': 'w-full p-4 border border-gray-300 rounded-lg',
-                'placeholder': 'Write your comment here...',
+                'placeholder': 'Write your comment here',
                 'rows': 3,
             }),
         }
