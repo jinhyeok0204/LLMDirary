@@ -74,10 +74,12 @@ def post_delete_view(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
 
     if post.post_publisher != request.user:
+        messages.error(request, "게시글 삭제 권한이 없습니다.")
         return HttpResponseForbidden("이 게시글을 삭제할 권한이 없습니다.")
 
     if request.method == 'POST':
         post.delete()
+        messages.success(request, '게시글이 성공적으로 삭제되었습니다.')
         return redirect('community_home')
 
 
