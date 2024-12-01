@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Community{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen flex flex-col">
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+       <aside class="w-1/6 bg-white shadow-lg h-screen flex flex-col items-center py-8">
+        <!-- Profile Section -->
+        <img src="{% static 'images/llmdiary_logo.png' %}" alt="Profile Picture" class="w-40 h-40 shadow-md">
+        <h2 class="mt-4 text-xl font-semibold text-gray-800">{{ request.user.name }}</h2>
+        <p class="text-sm text-gray-500">Role: {{ request.user.get_role_display }}</p>
+
+        <!-- Navigation Menu -->
+        <nav class="mt-10 w-full px-4">
+            <ul class="space-y-6">
+                <li>
+                    <a href="{% url 'home' %}"
+                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                              {% if request.resolver_match.url_name == 'home' %} bg-purple-100 text-purple-700 font-bold
+                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'profile' %}"
+                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                              {% if request.resolver_match.url_name == 'profile' %} bg-purple-100 text-purple-700 font-bold
+                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                        Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'diary' %}"
+                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                              {% if request.resolver_match.url_name == 'diary' %} bg-purple-100 text-purple-700 font-bold
+                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                        Diary
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'counsel' %}"
+                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                              {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
+                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                        Counsel
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'community_home' %}"
+                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                              {% if request.resolver_match.url_name == 'community_home' %} bg-purple-100 text-purple-700 font-bold
+                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                        Community
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-8">
+            {% block content %}
+            <!-- 페이지별 내용이 여기에 삽입됩니다 -->
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center p-4">
+        <p>&copy; 2024 LLM Diary. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

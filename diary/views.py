@@ -4,8 +4,9 @@ from django.contrib import messages
 from .models import Diary
 # Create your views here.
 
-@login_required
-def write_diary(request):
+
+@login_required(redirect_field_name='login')
+def diary_write_view(request):
     if request.method == 'POST':
         diary_date = request.POST.get('diary_date')
         diary_content = request.POST.get('diary_content')
@@ -28,10 +29,10 @@ def write_diary(request):
         )
 
         messages.success(request, "다이어리가 성공적으로 작성되었습니다.")
-        return redirect('user_home')  # 다이어리 작성 후 이동할 페이지
+        return redirect('diary')  # 다이어리 작성 후 이동할 페이지
 
     return render(request, 'diary/write_diary.html')
 
 
-def diary_home(request):
+def diary_home_view(request):
     return render(request, 'diary/diary_home.html')

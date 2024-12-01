@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">커뮤니티</h1>
+    <p class="text-gray-600 mb-8 text-center">다양한 이야기를 나누고 새로운 인사이트를 발견하세요!</p>
+
+    <!-- 게시글 목록 -->
+    <div class="space-y-6">
+        {% for post in page_obj %}
+        <div class="bg-white shadow rounded-lg p-4">
+            <a href="{% url 'community_detail' post.post_id %}" class="block text-lg font-bold text-purple-700 hover:underline">
+                {{ post.post_title }}
+            </a>
+            <p class="text-gray-800">{{ post.post_content|slice:":50" }}...</p>
+            <p class="text-sm text-gray-600 mt-1">
+                by <strong>{{ post.post_publisher.login_id }}</strong> on {{ post.post_write_date }}
+            </p>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center">아직 게시글이 없습니다. 새로운 글을 작성해 보세요!</p>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+            이전
+        </a>
+        {% endif %}
+        <span class="px-4 py-2 bg-gray-100 rounded">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+            다음
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- 새 글 작성 버튼 -->
+    <div class="text-center mt-8">
+        <a href="{% url 'community_write' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">
+            새 글 작성하기
+        </a>
+    </div>
+</div>
+{% endblock %}
