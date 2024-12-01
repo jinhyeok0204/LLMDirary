@@ -5,10 +5,11 @@ from django.contrib import messages
 
 from accounts.models import User, Person
 
+
 @login_required(redirect_field_name='login')
 def password_check_view(request):
     if request.method == 'POST':
-        login_id = request.session['login_id']
+        login_id = request.user.login_id
         login_pw = request.POST['login_pw']
         user = authenticate(request, login_id=login_id, password=login_pw)
 
@@ -18,6 +19,9 @@ def password_check_view(request):
             messages.error(request, "비밀번호가 올바르지 않습니다.")  # 오류 메시지 추가
 
     return render(request, "profile/password_check.html")
+
+
+@login_required(redirect_field_name='login')
 def profile_home(request):
     user = request.user
 
