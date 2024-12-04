@@ -14,9 +14,9 @@
 
     <!-- 일기 목록 -->
     <div class="space-y-6">
-        {% for diary in diaries %}
+        {% for diary in page_obj %}
         <div class="bg-white shadow rounded-lg p-4">
-            <a href="{% url 'diary_detail' diary.id %}" class="block text-lg font-bold text-purple-700 hover:underline">
+            <a href="{% url 'diary_detail' diary.diary_id %}" class="block text-lg font-bold text-purple-700 hover:underline">
                 {{ diary.title }}
             </a>
             <p class="text-gray-800 mt-2">
