@@ -1,38 +1,93 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Diary
-# Create your views here.
+from .forms import DiaryForm
+from django.core.paginator import Paginator
 
 
 @login_required(redirect_field_name='login')
 def diary_write_view(request):
     if request.method == 'POST':
-        diary_date = request.POST.get('diary_date')
-        diary_content = request.POST.get('diary_content')
+        form = DiaryForm(request.POST)
+        if form.is_valid():
+            diary_date = form.cleaned_data['diary_date']
+            # 중복 검사
+            if Diary.objects.filter(user=request.user.user, diary_date=diary_date).exists():
+                messages.error(request, f"{diary_date}에 이미 작성된 일기가 있습니다.")
+                return render(request, "diary/diary_write.html", {'form': form})
+            diary = form.save(commit=False)
+            diary.user = request.user.user
 
-        # 유효성 검사
-        if not diary_date or not diary_content:
-            messages.error(request, "모든 필드를 입력해야 합니다.")
-            return redirect('write_diary')
-
-        # 중복 작성 방지
-        if Diary.objects.filter(user=request.user, diary_date=diary_date).exists():
-            messages.error(request, f"{diary_date}에 이미 작성된 일기가 있습니다.")
-            return redirect('write_diary')
-
-        # 다이어리 저장
-        Diary.objects.create(
-            user=request.user,
-            diary_date=diary_date,
-            diary_content=diary_content
-        )
-
-        messages.success(request, "다이어리가 성공적으로 작성되었습니다.")
-        return redirect('diary')  # 다이어리 작성 후 이동할 페이지
-
-    return render(request, 'diary/write_diary.html')
+            diary.save()
+            messages.success(request, '일기가 성공적으로 저장되었습니다.')
+            return redirect('diary')
+        else:
+            messages.error(request, '일기 저장에 실패했습니다.')
+    else:
+        form = DiaryForm()
+    return render(request, 'diary/diary_write.html', {'form': form})
 
 
+@login_required()
 def diary_home_view(request):
-    return render(request, 'diary/diary_home.html')
+    diaries = Diary.objects.filter(user=request.user.user).order_by('-diary_date')
+    print(diaries)
+    paginator = Paginator(diaries, 10)  # 페이지당 10개 게시글
+    page_number = request.GET.get('page')  # 현재 페이지 번호
+    page_obj = paginator.get_page(page_number)  # 해당 페이지의 데이터
+
+    context = {
+        'page_obj': page_obj,
+    }
+    return render(request, 'diary/diary_home.html', context)
+
+
+@login_required()
+def diary_edit_view(request, diary_id):
+    '''
+    다이어리 수정 뷰
+    '''
+    diary = get_object_or_404(Diary, pk=diary_id, user=request.user.user)
+
+    if request.method == 'POST':
+        form = DiaryForm(request.POST, instance=diary)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '일기가 성공적으로 수정되었습니다.')
+            return redirect('diary_detail', diary_id=diary.diary_id)
+        else:
+            messages.error(request, '일기 수정에 실패했습니다.')
+    else:
+        form = DiaryForm(instance=diary)
+    context = {
+        'form': form,
+        'diary': diary,
+    }
+    return render(request, 'diary/diary_edit.html', context)
+
+
+@login_required()
+def diary_delete_view(request, diary_id):
+    '''
+    특정 다이어리 삭제하는 뷰
+    '''
+    diary = get_object_or_404(Diary, pk=diary_id, user=request.user.user)
+    if request.method == 'POST':
+        diary.delete()
+        messages.success(request, '다이어리가 삭제되었습니다.')
+        return redirect('diary_home')
+
+    context = {
+        'diary' : diary,
+    }
+    return render(request, 'diary')
+
+
+def diary_detail_view(request, diary_id):
+    diary = get_object_or_404(Diary, pk=diary_id, user=request.user.user)
+    context = {
+        'diary' : diary,
+    }
+    return render(request, 'diary/diary_detail.html', context)
+
