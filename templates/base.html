@@ -39,22 +39,37 @@
         <!-- Navigation Menu -->
         <nav class="mt-10 w-full px-4">
             <ul class="space-y-6">
-                {% if user.role == 'counselor' %}
+                {% if user.role == 'admin' %}
                     <li>
-                        <a href="{% url 'counselor_home' %}"
-                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
-                                  {% if request.resolver_match.url_name == 'counselor_home' %} bg-purple-100 text-purple-700 font-bold
-                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
-                            Home
-                        </a>
-                    </li>
-                {% elif user.role == 'user' %}
-                    <li>
-                        <a href="{% url 'home' %}"
+                        <a href="{% url 'admin_home' %}"
                            class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
                                   {% if request.resolver_match.url_name == 'home' %} bg-purple-100 text-purple-700 font-bold
                                   {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
                             Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'password_check' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'password_check' or request.resolver_match.url_name == 'password_change' or request.resolver_match.url_name == 'password_change_done' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'counsel' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Counsel
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'community_home' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'community_home' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Community
                         </a>
                     </li>
                 {% elif user.role == 'customer_support' %}
@@ -66,25 +81,72 @@
                             Home
                         </a>
                     </li>
-                {% elif user.role == 'admin' %}
                     <li>
-                        <a href="{% url 'admin_home' %}"
+                        <a href="{% url 'password_check' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'password_check' or request.resolver_match.url_name == 'password_change' or request.resolver_match.url_name == 'password_change_done' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'counsel' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Counsel
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'community_home' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'community_home' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Community
+                        </a>
+                    </li>
+                {% elif user.role == 'counselor' %}
+                    <li>
+                        <a href="{% url 'counselor_home' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'counselor_home' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'password_check' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'password_check' or request.resolver_match.url_name == 'password_change' or request.resolver_match.url_name == 'password_change_done' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'counsel' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Counsel
+                        </a>
+                    </li>
+                {% elif user.role == 'user' %}
+                    <li>
+                        <a href="{% url 'home' %}"
                            class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
                                   {% if request.resolver_match.url_name == 'home' %} bg-purple-100 text-purple-700 font-bold
                                   {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
                             Home
                         </a>
                     </li>
-                {% endif %}
-                <li>
-                    <a href="{% url 'password_check' %}"
-                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
-                              {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'password_check' or request.resolver_match.url_name == 'password_change' or request.resolver_match.url_name == 'password_change_done' %} bg-purple-100 text-purple-700 font-bold
-                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
-                        Profile
-                    </a>
-                </li>
-                {% if user.role == 'user' %}
+                    <li>
+                        <a href="{% url 'password_check' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'password_check' or request.resolver_match.url_name == 'password_change' or request.resolver_match.url_name == 'password_change_done' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Profile
+                        </a>
+                    </li>
                     <li>
                         <a href="{% url 'diary' %}"
                            class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
@@ -93,16 +155,14 @@
                             Diary
                         </a>
                     </li>
-                {% endif %}
-                <li>
-                    <a href="{% url 'counsel' %}"
-                       class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
-                              {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
-                              {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
-                        Counsel
-                    </a>
-                </li>
-                {% if user.role != 'counselor' %}
+                    <li>
+                        <a href="{% url 'counsel' %}"
+                           class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
+                                  {% if request.resolver_match.url_name == 'counsel' %} bg-purple-100 text-purple-700 font-bold
+                                  {% else %} bg-gray-50 text-gray-700 hover:bg-purple-100 hover:text-purple-700 {% endif %}">
+                            Counsel
+                        </a>
+                    </li>
                     <li>
                         <a href="{% url 'community_home' %}"
                            class="block w-full py-3 px-4 text-center rounded-lg shadow-sm transition
