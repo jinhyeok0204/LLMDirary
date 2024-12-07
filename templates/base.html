@@ -8,6 +8,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+     <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}Welcome to LLM Diary - Your personal emotion diary platform.{% endblock %}">
+    <meta name="keywords" content="Diary, LLM, Emotion Analysis, Community">
+    <meta name="author" content="LLM Diary Team">
+    <meta name="robots" content="index, follow">
+
+        <!-- Dark Mode Script -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen flex flex-col">
 

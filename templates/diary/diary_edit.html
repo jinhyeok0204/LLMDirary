@@ -7,15 +7,21 @@
 
         <form method="post">
             {% csrf_token %}
-
+            <div class="space-y-4">
+                <!--날짜-->
+                <div>
+                    <label for="id_diary_date" class="block text-gray-700 dark:text-gray-300 font-medium">날짜</label>
+                    {{ form.diary_date }}
+                </div>
+            </div>
             <!-- 제목 -->
-            <div>
+            <div class="space-y-4">
                 <label for="id_title" class="block text-gray-700 font-medium">제목</label>
                 {{ form.title }}
             </div>
 
             <!-- 내용 -->
-            <div class="mt-4">
+            <div class="mt-4 space-y-4">
                 <label for="id_content" class="block text-gray-700 font-medium">내용</label>
                 {{ form.content }}
             </div>
