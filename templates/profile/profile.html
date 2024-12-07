@@ -1,4 +1,7 @@
+
 {% extends 'base.html' %}
+
+{% load humanize %}
 
 {% block content %}
     <div class="min-h-screen flex items-center justify-center">
@@ -11,8 +14,14 @@
                 </div>
                 <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
                     <span class="font-semibold text-purple-700 w-1/3">역할</span>
-                    <p class="text-gray-800">{{ user.role }}</p>
+                    <p class="text-gray-800">{{ role }}</p>
                 </div>
+                {% if user.role == 'counselor' or user.role == 'customer_support' %}
+                    <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
+                        <span class="font-semibold text-purple-700 w-1/3">담당자</span>
+                        <p class="text-gray-800">{{ contact.name }}</p>
+                    </div>
+                {% endif %}
                 <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
                     <span class="font-semibold text-purple-700 w-1/3">아이디</span>
                     <p class="text-gray-800">{{ person.login_id }}</p>
@@ -23,19 +32,29 @@
                         변경
                     </a>
                 </div>
-                <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
-                    <span class="font-semibold text-purple-700 w-1/3">생년월일</span>
-                    <p class="text-gray-800">{{ userdata.birth|date:"Y년 m월 d일" }}</p>
-                </div>
-                <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
-                    <span class="font-semibold text-purple-700 w-1/3">성별</span>
-                    <p class="text-gray-800">
-                        {% if userdata.gender == "M" %} 남자
-                        {% elif userdata.gender == "F" %} 여자
-                        {% else %} 기타
-                        {% endif %}
-                    </p>
-                </div>
+                {% if user.role == 'user' %}
+                    <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
+                        <span class="font-semibold text-purple-700 w-1/3">생년월일</span>
+                        <p class="text-gray-800">{{ userdata.birth|date:"Y년 m월 d일" }}</p>
+                    </div>
+                {% endif %}
+                {% if user.role == 'user' or user.role == 'counselor' %}
+                    <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
+                        <span class="font-semibold text-purple-700 w-1/3">성별</span>
+                        <p class="text-gray-800">
+                            {% if userdata.gender == "M" %} 남자
+                            {% elif userdata.gender == "F" %} 여자
+                            {% else %} 기타
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+                {% if user.role == 'customer_support' %}
+                    <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
+                        <span class="font-semibold text-purple-700 w-1/3">월급</span>
+                        <p class="text-gray-800">{{ userdata.salary|intcomma }} 원</p>
+                    </div>
+                {% endif %}
                 <div class="bg-purple-50 p-4 rounded-lg shadow-sm flex items-center">
                     <span class="font-semibold text-purple-700 w-1/3">핸드폰 번호</span>
                     <p class="text-gray-800">{{ person.phone_num }}</p>

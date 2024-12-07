@@ -1,12 +1,13 @@
 from django.shortcuts import render
-from accounts.models import User, Person
+from accounts.models import User, Person, Counselor
 from diary.models import Diary
 from django.contrib.auth.decorators import login_required
-
+from django.contrib import messages
 
 @login_required(redirect_field_name='login')
 def home_view(request):
     user = request.user
+    person = Person.objects.get(id=request.user.id)
 
     recent_diaries = Diary.objects.filter(user_id=user.id).order_by('-diary_write_date')[:5]
     # 감정 통계 데이터
@@ -31,5 +32,17 @@ def home_view(request):
         "user": user,
         "recent_diaries": recent_diaries,
         "emotion_totals": emotion_totals,
+        "person_role": person.role,
     })
 
+def counselor_home(request):
+    person = Person.objects.get(id=request.user.id)
+    if person.role != 'counselor':
+        messages.error(request, "상담사만 접근 가능합니다.")
+
+    counselor = Counselor.objects.get(id=person)
+    return render(request, 'counselor/counselor_home.html', {
+        'person': person,
+        'counselor': counselor,
+        "person_role": person.role,
+    })

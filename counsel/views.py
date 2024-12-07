@@ -13,7 +13,7 @@ from django.contrib import messages
 @login_required(redirect_field_name='login')
 def counsel_home(request):
     user = request.user
-    counsels = Counsel.objects.filter(user=user.id).select_related('counselor').order_by('counsel_datetime')
+    counsels = Counsel.objects.filter(user=user.id).select_related('counselor').order_by('-counsel_datetime')
     counselors = Counselor.objects.filter(is_approved=True).select_related('id').order_by('id__name')
 
     # 페이지네이션 설정
@@ -39,6 +39,8 @@ def counsel_home(request):
                     'counsel_id': counsel.counsel_id,
                     'counselor_name': counsel.counselor.id.name,
                     'counsel_datetime': counsel.counsel_datetime,
+                    'counsel_is_appointment': counsel.is_appointment,
+                    'counsel_is_complete': counsel.is_complete,
                 }
                 for counsel in counsel_page_obj
             ]
@@ -126,6 +128,7 @@ def counsel_detail(request):
         'counsel_datetime': counsel.counsel_datetime,
         'counsel_content': counsel.counsel_content,
         'counsel_is_appointment': counsel.is_appointment,
+        'counsel_is_complete': counsel.is_complete,
     })
 
 @login_required(redirect_field_name='login')

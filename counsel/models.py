@@ -11,4 +11,5 @@ class Counsel(models.Model):
     counsel_datetime = models.DateTimeField(null=True)
     counsel_content = models.TextField(default='')
     is_appointment = models.BooleanField(default=False)
+    is_complete = models.BooleanField(default=False)
 

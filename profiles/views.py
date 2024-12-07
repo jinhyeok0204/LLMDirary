@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from .forms import CustomPasswordChangeForm
 
-from accounts.models import User, Person
+from accounts.models import User, Person, Counselor, CustomerSupport
+
 
 @login_required(redirect_field_name='login')
 def password_check_view(request):
@@ -26,15 +27,42 @@ def password_check_view(request):
 @login_required(redirect_field_name='login')
 def profile_home(request):
     user = request.user
-
     person = Person.objects.get(pk=user.pk)
-    userdata = User.objects.get(pk=user.pk)
+
+    if person.role == 'user':
+        userdata = User.objects.get(pk=user.pk)
+        return render(request, "profile/profile.html", {
+            "user": user,
+            "person": person,
+            "userdata": userdata,
+            "role": "사용자",
+        })
+    elif person.role == 'counselor':
+        userdata = Counselor.objects.get(pk=user.pk)
+        contact = Person.objects.get(pk=userdata.admin_id)
+        return render(request, "profile/profile.html", {
+            "user": user,
+            "person": person,
+            "userdata": userdata,
+            "contact": contact,
+            "role": "상담사",
+        })
+    elif person.role == 'customer_support':
+        userdata = CustomerSupport.objects.get(pk=user.pk)
+        contact = Person.objects.get(pk=userdata.admin_id)
+        return render(request, "profile/profile.html", {
+            "user": user,
+            "person": person,
+            "userdata": userdata,
+            "contact": contact,
+            "role": "고객 담당자",
+        })
 
     # 사용자 정보를 템플릿에 전달
     return render(request, "profile/profile.html", {
         "user": user,
         "person": person,
-        "userdata": userdata,
+        "role": "관리자",
     })
 
 

@@ -8,11 +8,13 @@
     <div class="flex">
         <!-- 왼쪽: 상담 내역 -->
         <div class="w-1/2 pr-4">
-            <h2 class="text-2xl font-bold text-purple-700 mb-4">내 상담 내역</h2>
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">상담 내역</h2>
             <div id="counsel-list" class="bg-white shadow rounded-lg p-4">
                 {% for counsel in counsel_page_obj %}
                 <div class="border-b pb-2 mb-2 cursor-pointer counsel-detail-btn" data-id="{{ counsel.counsel_id }}">
-                    {% if counsel.is_appointment %}
+                    {% if counsel.is_complete %}
+                        <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }} (완료)</p>
+                    {% elif counsel.is_appointment %}
                         <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }} (예약)</p>
                     {% else %}
                         <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }} (대기)</p>
@@ -187,7 +189,11 @@ $(document).ready(function() {
                     var counsel_appointment;
                     data.counsels.forEach(function(counsel) {
                         counsel_num++;
-                        if (counsel.is_appointment){
+                        console.log(counsel);
+                        if (counsel.counsel_is_complete){
+                            counsel_appointment = "완료";
+                        }
+                        else if (counsel.counsel_is_appointment){
                             counsel_appointment = "예약";
                         }
                         else {
@@ -453,10 +459,22 @@ $(document).ready(function() {
             url: `{% url 'counsel_detail' %}?counsel_id=${counselId}`,
             type: 'GET',
             success: function(data) {
+                var counsel_appointment;
+
+                if (data.counsel_is_complete){
+                    counsel_appointment = "완료";
+                }
+                else if (data.counsel_is_appointment){
+                    counsel_appointment = "예약";
+                }
+                else {
+                    counsel_appointment = "대기";
+                }
+
                 $('#counsel-detail-content').html(`
                     <p class="text-lg"><strong>상담사:</strong> ${data.counselor_name}</p>
                     <p class="text-lg"><strong>상담 날짜:</strong> ${formatDateTime(data.counsel_datetime)}</p>
-                    <p class="text-lg"><strong>상태:</strong> ${data.is_appointment ? "예약" : "대기"}</p>
+                    <p class="text-lg"><strong>상태:</strong> ${counsel_appointment}</p>
                     <p class="text-lg"><strong>상담 내용:</strong> ${data.counsel_content}</p>
                 `);
                 $('#cancel-reservation-btn').data('id', counselId); // 예약 취소 버튼에 ID 저장
@@ -483,7 +501,7 @@ $(document).ready(function() {
             success: function() {
                 $('#counsel-detail-modal').addClass('hidden'); // 모달 닫기
 
-                // 내 상담 내역 갱신
+                // 상담 내역 갱신
                 const currentPage = $('#counsel-prev-btn').data('page') || 1;
                 $.ajax({
                     url: `?counsel_page=${currentPage}`,
@@ -491,10 +509,21 @@ $(document).ready(function() {
                     success: function(data) {
                         $('#counsel-list').empty(); // 기존 내용 비우기
                         data.counsels.forEach(function(counsel) {
-                            const status = counsel.is_appointment ? "예약" : "대기";
+                            var counsel_appointment;
+
+                            if (counsel.counsel_is_complete){
+                                counsel_appointment = "완료";
+                            }
+                            else if (counsel.counsel_is_appointment){
+                                counsel_appointment = "예약";
+                            }
+                            else {
+                                counsel_appointment = "대기";
+                            }
+
                             $('#counsel-list').append(`
                                 <div class="border-b pb-2 mb-2 cursor-pointer counsel-detail-btn" data-id="${counsel.id}">
-                                    <p class="text-lg font-bold text-purple-700">${counsel.counselor_name} (${status})</p>
+                                    <p class="text-lg font-bold text-purple-700">${counsel.counselor_name} (${counsel_appointment})</p>
                                     <p class="text-gray-800">상담 날짜: ${formatDateTime(counsel.counsel_datetime)}</p>
                                 </div>
                             `);

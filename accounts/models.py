@@ -80,7 +80,7 @@ class User(models.Model):
 class CustomerSupport(models.Model):
     id = models.OneToOneField(Person, on_delete=models.CASCADE, primary_key=True)
     admin = models.ForeignKey(Person, on_delete=models.SET_NULL, null=True, blank=True, related_name='customer_supports')
-    salary = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # 최대 10자리 중 소수점 이하 2자리까지 포함하여 값 저장 가능(12345678.90)
+    salary = models.IntegerField(default=0)  # 최대 10자리 중 소수점 이하 2자리까지 포함하여 값 저장 가능(12345678.90)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):

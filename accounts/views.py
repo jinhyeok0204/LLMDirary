@@ -17,17 +17,16 @@ def login_view(request):
             # 로그인 성공
             login(request, user)
             messages.success(request, "로그인에 성공했습니다.")
-            #request.session['user_id'] = user.id
 
             # 역할에 따른 redirect
             try:
                 person = Person.objects.get(pk=user.pk)
                 if person.role == 'admin':
-                    return redirect('admin_dashboard')
+                    return redirect('admin_home')
                 elif person.role == 'customer_support':
-                    return redirect('customer_support_dashboard')
+                    return redirect('customer_support_home')
                 elif person.role == 'counselor':
-                    return redirect('counselor_dashboard')
+                    return redirect('counselor_home')
                 else: # user
                     return redirect('home')
             except Person.DoesNotExist:
@@ -122,7 +121,7 @@ def user_home(request):
 def admin_dashboard(request):
     person = request.user
     person = Person.objects.get(id=request.user.id)
-    if not person.is_admin():
+    if not person.is_staff:
         return HttpResponseForbidden("관리자만 접근 가능합니다.")
 
     # 관리자 관련 데이터
