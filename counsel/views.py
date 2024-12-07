@@ -11,12 +11,8 @@ from django.core.paginator import EmptyPage
 @login_required(redirect_field_name='login')
 def counsel_home(request):
     user = request.user
-
-    # 사용자의 상담 내역 가져오기
-    counsels = Counsel.objects.filter(user=user.id).select_related('counselor')
-
-    # 상담사 목록 가져오기
-    counselors = Counselor.objects.filter(is_approved=True).select_related('id')
+    counsels = Counsel.objects.filter(user=user.id).select_related('counselor').order_by('counsel_id')
+    counselors = Counselor.objects.filter(is_approved=True).select_related('id').order_by('id__name')
 
     # 페이지네이션 설정
     paginator = Paginator(counselors, 3)  # 페이지당 상담사 3명
@@ -50,32 +46,25 @@ def counsel_home(request):
     return render(request, 'counsel/counsel_home.html', {
         'user': user,
         'counsels': counsels,
+        'counselors': counselors,
         'page_obj': page_obj,
     })
 
-
 @login_required(redirect_field_name='login')
 def counsel_apply(request):
-    user = request.user
-
     if request.method == 'POST':
+        user = request.user
         counselor_id = request.POST.get('counselor_id')
-        appointment_date = request.POST.get('appointment_date')  # 상담 날짜
+        counsel_date = request.POST.get('counsel_date')
+        counsel_content = request.POST.get('counsel_content')
 
-        # 상담사 유효성 검사
-        counselor = get_object_or_404(Counselor.objects.filter(is_approved=True).select_related('id'), pk=counselor_id)
+        counselor = get_object_or_404(Counselor, id=counselor_id)
 
-        if not appointment_date:
-            return HttpResponse("예약 날짜를 선택해주세요.", status=400)
-
-        # 상담 예약 처리 (추가적으로 상담 예약 모델 필요)
-        # 예시 코드: CounselSchedule 모델이 있다고 가정
-        # CounselSchedule.objects.create(
-        #     user=user,
-        #     counselor=counselor,
-        #     appointment_date=appointment_date,
-        #     created_at=now()
-        # )
-
-        # 예약 완료 후 홈으로 리다이렉트
-        return redirect('counsel')
+        Counsel.objects.create(
+            user=user,
+            counselor=counselor,
+            counsel_date=counsel_date,
+            content=counsel_content,
+        )
+        return JsonResponse({'message': '상담 신청이 완료되었습니다.'})
+    return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)

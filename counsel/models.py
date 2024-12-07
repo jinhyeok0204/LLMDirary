@@ -8,4 +8,5 @@ class Counsel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_counsels')
     customer_support = models.ForeignKey(CustomerSupport, on_delete=models.CASCADE, related_name='customer_support_counsels')
     counsel_date = models.DateField()
+    is_appointment = models.BooleanField(default=False)
 
