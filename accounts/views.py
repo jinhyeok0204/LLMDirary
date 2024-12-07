@@ -127,7 +127,7 @@ def admin_dashboard(request):
     # 관리자 관련 데이터
     counselors = Counselor.objects.filter(admin=person)
     customer_supports = CustomerSupport.objects.filter(admin=person)
-    return render(request, 'accounts/admin_dashboard.html', {
+    return render(request, 'admin/admin_home.html', {
         'person': person,
         'counselors': counselors,
         'customer_supports': customer_supports,

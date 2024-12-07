@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container mx-auto p-8">
@@ -16,6 +17,24 @@
     <div class="space-y-6">
         {% for diary in page_obj %}
         <div class="bg-white shadow rounded-lg p-4">
+        <div class="flex-shrink-0 w-16 h-16 flex items-center justify-center">
+                {% if diary.emotion_analysis %}
+                    {% if diary.emotion_analysis.summary == 'happiness'%}
+                    <img src="{% static 'images/happy_icon.png' %}" alt="행복" class="w-12 h-12">
+                    {% elif diary.emotion_analysis.summary == 'sadness'%}
+                    <img src="{% static 'images/sad_icon.png' %}" alt="슬픔" class="w-12 h-12">
+                    {% elif diary.emotion_analysis.summary == 'anger'%}
+                    <img src="{% static 'images/angry_icon.png' %}" alt="분노" class="w-12 h-12">
+                    {% elif diary.emotion_analysis.summary == 'anxiety' %}
+                    <img src="{% static 'images/anxiety_icon.png' %}" alt="불안" class="w-12 h-12">
+                    {% elif diary.emotion_analysis.summary == 'hurt' %}
+                    <img src="{% static 'images/hurt_icon.png' %}" alt="상처" class="w-12 h-12">
+                    {% elif diary.emotion_analysis.summary == 'embarrassment' %}
+                    <img src="{% static 'images/embarassed_Icon.png' %}" alt="당황" class="w-12 h-12">
+                    {% endif %}
+                {% else %}
+                {% endif %}
+            </div>
             <a href="{% url 'diary_detail' diary.diary_id %}" class="block text-xl font-bold text-purple-700 hover:underline">
                 [{{ diary.diary_date }}] {{ diary.title }}
             </a>
