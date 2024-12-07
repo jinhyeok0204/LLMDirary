@@ -11,9 +11,13 @@
             <h2 class="text-2xl font-bold text-purple-700 mb-4">내 상담 내역</h2>
             <div id="counsel-list" class="bg-white shadow rounded-lg p-4">
                 {% for counsel in counsel_page_obj %}
-                <div class="border-b pb-2 mb-2">
-                    <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }}</p>
-                    <p class="text-gray-800">상담 날짜: {{ counsel.counsel_date|date:"Y년 m월 d일" }}</p>
+                <div class="border-b pb-2 mb-2 cursor-pointer counsel-detail-btn" data-id="{{ counsel.counsel_id }}">
+                    {% if counsel.is_appointment %}
+                        <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }} (예약)</p>
+                    {% else %}
+                        <p class="text-lg font-bold text-purple-700">{{ counsel.counselor.id.name }} (대기)</p>
+                    {% endif %}
+                    <p class="text-gray-800">상담 날짜: {{ counsel.counsel_datetime|date:"Y-m-d H:i" }}</p>
                 </div>
                 {% empty %}
                 <p class="text-gray-500">상담 내역이 없습니다.</p>
@@ -32,7 +36,7 @@
                     이전
                 </button>
 
-                <span class="px-4 py-2 bg-gray-100 rounded">{{ counsel_page_obj.number }} / {{ counsel_page_obj.paginator.num_pages }}</span>
+                <span class="px-4 py-2 bg-gray-100 rounded counsel-page-info">{{ counsel_page_obj.number }} / {{ counsel_page_obj.paginator.num_pages }}</span>
 
                 <button id="counsel-next-btn"
                         class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
@@ -143,8 +147,32 @@
     </div>
 </div>
 
+<div id="counsel-detail-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white w-1/3 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-purple-700 mb-4 text-center">예약 상세 내용</h2>
+        <div id="counsel-detail-content" class="mb-6">
+            <!-- 예약 상세 내용 -->
+        </div>
+        <div class="flex justify-end space-x-2">
+            <button type="button" id="close-detail-modal" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">닫기</button>
+            <button type="button" id="cancel-reservation-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">예약 취소</button>
+        </div>
+    </div>
+</div>
+
 <script>
 $(document).ready(function() {
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
      $('#counsel-prev-btn, #counsel-next-btn').click(function() {
         if ($(this).is(':disabled')) return;
 
@@ -156,12 +184,19 @@ $(document).ready(function() {
                 success: function(data) {
                     $('#counsel-list').empty();
                     let counsel_num = 0;
+                    var counsel_appointment;
                     data.counsels.forEach(function(counsel) {
                         counsel_num++;
+                        if (counsel.is_appointment){
+                            counsel_appointment = "예약";
+                        }
+                        else {
+                            counsel_appointment = "대기";
+                        }
                         $('#counsel-list').append(`
-                            <div class="border-b pb-2 mb-2">
-                                <p class="text-lg font-bold text-purple-700">${counsel.counselor_name}</p>
-                                <p class="text-gray-800">상담 날짜: ${counsel.counsel_date}</p>
+                            <div class="border-b pb-2 mb-2 cursor-pointer counsel-detail-btn" data-id="${ counsel.counsel_id }">
+                                <p class="text-lg font-bold text-purple-700">${counsel.counselor_name} (${counsel_appointment})</p>
+                                <p class="text-gray-800">상담 날짜: ${formatDateTime(counsel.counsel_datetime)}</p>
                             </div>
                         `);
                     });
@@ -271,21 +306,26 @@ $(document).ready(function() {
         const counselorId = $(this).data('id');
         const counselorName = $(this).data('name');
         const counselorGender = $(this).data('gender');
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date();
+        const utcOffset = 9 * 60;
+        const localToday = new Date(today.getTime() + utcOffset * 60 * 1000);
+        const formattedToday = localToday.toISOString().split("T")[0];
 
         initializeTimeSelectors();
 
         $('#modal-counselor-id').val(counselorId);
         $('#modal-counselor-name').text(`${counselorName} (${counselorGender})`);
         $('#apply-modal').removeClass('hidden');
-        $("#modal-counsel-date").attr("min", today);
+        $("#modal-counsel-date").attr("min", formattedToday);
         $('#modal-counsel-hour, #modal-counsel-minute').prop('disabled', true);
     });
 
     $("#modal-counsel-date").on("change", function () {
         const selectedDate = $(this).val();
         const now = new Date();
-        const currentDate = now.toISOString().split("T")[0];
+        const utcOffset = 9 * 60;
+        const localnow = new Date(now.getTime() + utcOffset * 60 * 1000);
+        const currentDate = localnow.toISOString().split("T")[0];
 
         if (selectedDate === currentDate) {
             // 오늘 날짜라면 현재 시간 이후만 허용
@@ -361,7 +401,7 @@ $(document).ready(function() {
         }
     });
 
-   $('#close-modal').click(function() {
+    $('#close-modal').click(function() {
         // 모달 닫기
         $('#apply-modal').addClass('hidden');
 
@@ -372,14 +412,125 @@ $(document).ready(function() {
     });
 
     $('#apply-form').submit(function(event) {
-        event.preventDefault();
+        event.preventDefault(); // 기본 폼 제출 막기
+
+        // 폼 유효성 검사
+        const counselorId = $('#modal-counselor-id').val();
+        const counselDate = $('#modal-counsel-date').val();
+        const counselHour = $('#modal-counsel-hour').val();
+        const counselMinute = $('#modal-counsel-minute').val();
+        const counselContent = $('#modal-counsel-content').val();
+
+        if (!counselorId || !counselDate || !counselHour || !counselMinute || !counselContent.trim()) {
+            alert('모든 필드를 작성해주세요.'); // 경고 메시지
+            return; // 제출 중단
+        }
+
+        // 유효성 검사 통과 후 폼 데이터 제출
         const formData = $(this).serialize();
 
         $.ajax({
-            url: "{% url 'counsel_apply' %}",
+            url: "{% url 'counsel_apply' %}", // 상담 신청 URL
             type: "POST",
             data: formData,
+            success: function() {
+                $('#apply-modal').addClass('hidden'); // 모달 닫기
+                $('#apply-form')[0].reset(); // 폼 초기화
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error("상담 신청 실패:", error);
+            }
         });
+    });
+
+    // 내 상담 내역 클릭 시 예약 상세 내용 표시
+    $('#counsel-list').on('click', '.counsel-detail-btn', function() {
+        const counselId = $(this).data('id');
+
+        // AJAX로 예약 상세 정보 가져오기
+        $.ajax({
+            url: `{% url 'counsel_detail' %}?counsel_id=${counselId}`,
+            type: 'GET',
+            success: function(data) {
+                $('#counsel-detail-content').html(`
+                    <p class="text-lg"><strong>상담사:</strong> ${data.counselor_name}</p>
+                    <p class="text-lg"><strong>상담 날짜:</strong> ${formatDateTime(data.counsel_datetime)}</p>
+                    <p class="text-lg"><strong>상태:</strong> ${data.is_appointment ? "예약" : "대기"}</p>
+                    <p class="text-lg"><strong>상담 내용:</strong> ${data.counsel_content}</p>
+                `);
+                $('#cancel-reservation-btn').data('id', counselId); // 예약 취소 버튼에 ID 저장
+                $('#counsel-detail-modal').removeClass('hidden'); // 모달 열기
+            },
+            error: function(xhr, status, error) {
+                console.error("예약 상세 정보 로드 실패:", error);
+            }
+        });
+    });
+
+    // 예약 취소 버튼 클릭
+    $('#cancel-reservation-btn').click(function() {
+        const counselId = $(this).data('id');
+
+        // 예약 취소 요청
+        $.ajax({
+            url: `{% url 'cancel_reservation' %}`,
+            type: 'POST',
+            data: {
+                counsel_id: counselId,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function() {
+                $('#counsel-detail-modal').addClass('hidden'); // 모달 닫기
+
+                // 내 상담 내역 갱신
+                const currentPage = $('#counsel-prev-btn').data('page') || 1;
+                $.ajax({
+                    url: `?counsel_page=${currentPage}`,
+                    type: 'GET',
+                    success: function(data) {
+                        $('#counsel-list').empty(); // 기존 내용 비우기
+                        data.counsels.forEach(function(counsel) {
+                            const status = counsel.is_appointment ? "예약" : "대기";
+                            $('#counsel-list').append(`
+                                <div class="border-b pb-2 mb-2 cursor-pointer counsel-detail-btn" data-id="${counsel.id}">
+                                    <p class="text-lg font-bold text-purple-700">${counsel.counselor_name} (${status})</p>
+                                    <p class="text-gray-800">상담 날짜: ${formatDateTime(counsel.counsel_datetime)}</p>
+                                </div>
+                            `);
+                        });
+                        const currentPage = data.counsel_current_page;
+                        const totalPages = data.counsel_total_pages;
+
+                        if (currentPage > 1) {
+                            $('#counsel-prev-btn').data('page', currentPage - 1).prop('disabled', false);
+                        } else {
+                            $('#counsel-prev-btn').prop('disabled', true);
+                        }
+
+                        if (currentPage < totalPages) {
+                            $('#counsel-next-btn').data('page', currentPage + 1).prop('disabled', false);
+                        } else {
+                            $('#counsel-next-btn').prop('disabled', true);
+                        }
+
+                        // 페이지 번호 업데이트
+                        $('.counsel-page-info').text(`${currentPage} / ${totalPages}`);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX 요청 실패:", error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("예약 취소 실패:", error);
+            }
+        });
+    });
+
+    // 예약 상세 모달 닫기 버튼
+    $('#close-detail-modal').click(function() {
+        $('#counsel-detail-modal').addClass('hidden'); // 모달 닫기
     });
 });
 </script>

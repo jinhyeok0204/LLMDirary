@@ -1,7 +1,8 @@
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware, get_current_timezone
 from accounts.models import Counselor
 from .models import Counsel
 from django.core.paginator import Paginator
@@ -12,7 +13,7 @@ from django.contrib import messages
 @login_required(redirect_field_name='login')
 def counsel_home(request):
     user = request.user
-    counsels = Counsel.objects.filter(user=user.id).select_related('counselor').order_by('counsel_date')
+    counsels = Counsel.objects.filter(user=user.id).select_related('counselor').order_by('counsel_datetime')
     counselors = Counselor.objects.filter(is_approved=True).select_related('id').order_by('id__name')
 
     # 페이지네이션 설정
@@ -35,8 +36,9 @@ def counsel_home(request):
         if 'counsel_page' in request.GET:
             counsel_list = [
                 {
+                    'counsel_id': counsel.counsel_id,
                     'counselor_name': counsel.counselor.id.name,
-                    'counsel_date': counsel.counsel_date.strftime('%Y년 %m월 %d일'),
+                    'counsel_datetime': counsel.counsel_datetime,
                 }
                 for counsel in counsel_page_obj
             ]
@@ -82,14 +84,55 @@ def counsel_apply(request):
         user = request.user
         counselor_id = request.POST.get('counselor_id')
         counsel_date = request.POST.get('counsel_date')
+        counsel_hour = request.POST.get('counsel_hour')
+        counsel_minute = request.POST.get('counsel_minute')
         counsel_content = request.POST.get('counsel_content')
+
+        # naive datetime 생성
+        naive_datetime = datetime.strptime(
+            f"{counsel_date} {counsel_hour}:{counsel_minute}", "%Y-%m-%d %H:%M"
+        )
+
+        # 시간대 인식 datetime으로 변환
+        counsel_datetime = make_aware(naive_datetime)
+
+        # 중복 예약 검사
+        existing_counsel = Counsel.objects.filter(
+            counselor_id=counselor_id,
+            counsel_datetime=counsel_datetime
+        ).exists()
+        if existing_counsel:
+            messages.error(request, "해당 시간에 이미 예약이 존재합니다.")
+            return JsonResponse({'success': False, 'message': '해당 시간에 이미 예약이 존재합니다.'}, status=400)
 
         Counsel.objects.create(
             user_id=user.id,
             counselor_id=counselor_id,
-            counsel_date=counsel_date,
+            counsel_datetime=counsel_datetime,
             counsel_content=counsel_content,
         )
         messages.success(request, '상담이 성공적으로 신청되었습니다.')
+        return JsonResponse({'success': True})
     else:
         messages.error(request, "잘못된 요청입니다.")
+        return JsonResponse({'success': False}, status=400)
+
+@login_required(redirect_field_name='login')
+def counsel_detail(request):
+    counsel_id = request.GET.get('counsel_id')
+    counsel = get_object_or_404(Counsel, pk=counsel_id)
+    return JsonResponse({
+        'counselor_name': counsel.counselor.id.name,
+        'counsel_datetime': counsel.counsel_datetime,
+        'counsel_content': counsel.counsel_content,
+        'counsel_is_appointment': counsel.is_appointment,
+    })
+
+@login_required(redirect_field_name='login')
+def cancel_reservation(request):
+    if request.method == 'POST':
+        counsel_id = request.POST.get('counsel_id')
+        counsel = get_object_or_404(Counsel, pk=counsel_id)
+        counsel.delete()  # 예약 삭제
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False}, status=400)
