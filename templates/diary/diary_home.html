@@ -16,14 +16,14 @@
     <div class="space-y-6">
         {% for diary in page_obj %}
         <div class="bg-white shadow rounded-lg p-4">
-            <a href="{% url 'diary_detail' diary.diary_id %}" class="block text-lg font-bold text-purple-700 hover:underline">
-                {{ diary.title }}
+            <a href="{% url 'diary_detail' diary.diary_id %}" class="block text-xl font-bold text-purple-700 hover:underline">
+                [{{ diary.diary_date }}] {{ diary.title }}
             </a>
             <p class="text-gray-800 mt-2">
                 {{ diary.content|slice:":100" }}... <!-- 내용 미리보기 (최대 100자) -->
             </p>
-            <p class="text-sm text-gray-600 mt-2">
-                작성일: {{ diary.date|date:"Y년 m월 d일" }}
+            <p class="text-gray-400 mt-2 text-sm">
+                마지막 수정일 : {{ diary.diary_write_date }}
             </p>
         </div>
         {% empty %}

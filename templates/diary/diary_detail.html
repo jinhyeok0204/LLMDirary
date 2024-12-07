@@ -4,19 +4,71 @@
 <div class="container mx-auto p-8">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
         <h1 class="text-2xl font-bold text-purple-700 mb-4">{{ diary.title }}</h1>
-        <p class="text-gray-600 text-sm mb-2">작성 날짜: {{ diary.diary_date }}</p>
-        <p class="text-gray-600 text-sm mb-6">작성일: {{ diary.diary_write_date }}</p>
+        <p class="text-gray-600 text-sm mb-2">일기 날짜: {{ diary.diary_date }}</p>
+        <p class="text-gray-600 text-sm mb-6">마지막 수정: {{ diary.diary_write_date }}</p>
         <div class="text-gray-800">
             <p>{{ diary.content }}</p>
         </div>
         <div class="mt-6 text-center">
-            <a href="{% url 'diary' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">
-                목록으로 돌아가기
+            <a href="{% url 'diary_edit' diary.diary_id %}" class="bg-gray-300 text-gray-700 px-6 py-2 w-24 inline-block rounded-lg hover:bg-gray-500 ml-2">
+                수정
             </a>
-            <a href="{% url 'diary_edit' diary.diary_id %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 ml-2">
-                수정하기
-            </a>
+            <button
+                onclick="deleteDiary({{ diary.diary_id }})"
+                class="bg-red-400 text-white px-6 py-2 w-24 rounded-lg shadow hover:bg-red-500 ml-2"
+            >
+                삭제
+            </button>
         </div>
     </div>
+    <div class="text-center mt-10">
+        <a href="{% url 'diary' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">
+            뒤로가기
+        </a>
+    </div>
 </div>
+
+<script>
+    function getCookie(name){
+        let cookieValue = null;
+        if(document.cookie && document.cookie !== ''){
+            const cookies = document.cookie.split(';');
+            for (let i =0; i < cookies.length; i++){
+                const cookie = cookies[i].trim();
+                if(cookie.substring(0, name.length + 1) === name +'='){
+                    cookieValue = decodeURIComponent(cookie.substring(name.length+1));
+                    break;
+                }
+            }
+        }
+        return cookieValue
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    function deleteDiary(diaryId) {
+        console.log("deleting Diary Id :", diaryId);
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        fetch("{% url 'diary_delete'%}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({ diary_id: diaryId }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    window.location.href = data.redirect_url; // diary_home으로 리디렉션
+                } else {
+                    alert("삭제에 실패했습니다: " + data.message);
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("삭제 요청 중 오류가 발생했습니다.");
+            });
+    }
+</script>
 {% endblock %}

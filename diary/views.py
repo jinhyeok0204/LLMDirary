@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from .models import Diary
 from .forms import DiaryForm
 from django.core.paginator import Paginator
-
+from django.http import JsonResponse
+from django.urls import reverse
+import json
 
 @login_required(redirect_field_name='login')
 def diary_write_view(request):
@@ -32,7 +35,6 @@ def diary_write_view(request):
 @login_required()
 def diary_home_view(request):
     diaries = Diary.objects.filter(user=request.user.user).order_by('-diary_date')
-    print(diaries)
     paginator = Paginator(diaries, 10)  # 페이지당 10개 게시글
     page_number = request.GET.get('page')  # 현재 페이지 번호
     page_obj = paginator.get_page(page_number)  # 해당 페이지의 데이터
@@ -57,6 +59,8 @@ def diary_edit_view(request, diary_id):
             messages.success(request, '일기가 성공적으로 수정되었습니다.')
             return redirect('diary_detail', diary_id=diary.diary_id)
         else:
+            print("폼 검증 실페:", form.errors)
+            print(form)
             messages.error(request, '일기 수정에 실패했습니다.')
     else:
         form = DiaryForm(instance=diary)
@@ -68,20 +72,26 @@ def diary_edit_view(request, diary_id):
 
 
 @login_required()
-def diary_delete_view(request, diary_id):
+@require_POST
+def diary_delete_view(request):
     '''
     특정 다이어리 삭제하는 뷰
     '''
-    diary = get_object_or_404(Diary, pk=diary_id, user=request.user.user)
-    if request.method == 'POST':
-        diary.delete()
-        messages.success(request, '다이어리가 삭제되었습니다.')
-        return redirect('diary_home')
+    data = json.loads(request.body)
+    diary_id = data.get('diary_id')
 
-    context = {
-        'diary' : diary,
-    }
-    return render(request, 'diary')
+    if not diary_id:
+        return JsonResponse({'success': False, 'message': 'Diary Id is required.'})
+
+    diary = get_object_or_404(Diary, pk=diary_id, user = request.user.user)
+
+    diary.delete()
+
+    messages.success(request, "일기가 성공적으로 삭제되었습니다.")
+    return JsonResponse({
+        'success': True,
+        'redirect_url': reverse('diary'),
+    })
 
 
 def diary_detail_view(request, diary_id):

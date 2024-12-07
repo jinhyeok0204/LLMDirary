@@ -27,14 +27,13 @@ class Diary(models.Model):
     title = models.CharField(max_length=100, default="")  # 일기 제목
     content = models.TextField(default="")  # 일기 내용
     diary_date = models.DateField()  # 일기의 날짜
-    diary_write_date = models.DateField(auto_now_add=True)  # 작성하는 날짜 -> 수정되지않음.
+    diary_write_date = models.DateField(auto_now=True)
     emotion_analysis = models.OneToOneField(EmotionAnalysis, on_delete=models.CASCADE, related_name='diary', null=True, blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'diary_date'], name='unique_diary_per_day'),
         ]
-
 
     def __str__(self):
         return f"Diary by {self.user.id.name} on {self.diary_date}"
