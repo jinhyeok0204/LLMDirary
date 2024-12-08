@@ -1,9 +1,6 @@
 from django.db import models
 from accounts.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ValidationError
-from django.utils.timezone import now
-
 
 class EmotionAnalysis(models.Model):
     emotion_id = models.AutoField(primary_key=True)
@@ -14,7 +11,6 @@ class EmotionAnalysis(models.Model):
     embarrassment_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
     anxiety_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
     summary = models.TextField(null=True, blank=True)
-    reason = models.TextField()
     recommend_action = models.TextField()
 
     def __str__(self):
@@ -38,3 +34,7 @@ class Diary(models.Model):
     def __str__(self):
         return f"Diary by {self.user.id.name} on {self.diary_date}"
 
+    def delete(self, *args, **kwargs):
+        if self.emotion_analysis:
+            self.emotion_analysis.delete()  # 연결된 EmotionAnalysis 삭제
+        super().delete(*args, **kwargs)

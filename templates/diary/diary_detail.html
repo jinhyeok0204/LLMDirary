@@ -21,6 +21,32 @@
             </button>
         </div>
     </div>
+    <!-- 감정 분석 결과 표시 -->
+    {% if emotion_analysis %}
+        <div class="bg-blue-50 p-4 mt-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold text-blue-700">감정 분석 결과</h2>
+            <p class="text-gray-700 mt-2">
+                <strong>요약된 감정:</strong> {{ emotion_analysis.summary }}
+            </p>
+            <p class="text-gray-700 mt-2">
+                <strong>추천 행동:</strong> {{ emotion_analysis.recommend_action }}
+            </p>
+        </div>
+
+        <!-- 감정 확률 표시 -->
+        <div class="bg-white p-4 mt-4 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold text-gray-800">감정 비율</h2>
+            <ul class="mt-4 space-y-2">
+                {% for emotion, percentage in emotion_percentages.items %}
+                <li class="flex justify-between">
+                    <span class="text-gray-700 font-medium">{{ emotion }}</span>
+                    <span class="text-gray-500">{{ percentage }}%</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
     <div class="text-center mt-10">
         <a href="{% url 'diary' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">
             뒤로가기
