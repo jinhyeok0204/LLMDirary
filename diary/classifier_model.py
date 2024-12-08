@@ -1,5 +1,7 @@
 from torch import nn
 import torch
+
+
 class BERTClassifier(nn.Module):
     def __init__(self,
                  bert,

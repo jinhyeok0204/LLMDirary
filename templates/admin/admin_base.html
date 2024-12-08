@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- 전체 Flex 컨테이너 -->
+    <div class="flex flex-1 min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-1/5 bg-gray-800 text-white flex-shrink-0 space-y-4">
+            <div class="p-6">
+                <h1 class="text-xl font-bold">LLM Diary</h1>
+            </div>
+            <nav class="mt-6">
+                <ul>
+                    <li class="p-2">
+                        <a href="{% url 'admin_home' %}" class="block py-2 px-4 rounded hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_home' %}bg-gray-700{% endif %}">
+                            Home
+                        </a>
+                    </li>
+                    <li class="p-2">
+                        <a href="{% url 'admin_join_requests' %}" class="block py-2 px-4 rounded hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_join_requests' %}bg-gray-700{% endif %}">
+                            가입 요청 관리
+                        </a>
+                    </li>
+                    <li class="p-2">
+                        <a href="{% url 'admin_activity_logs' %}" class="block py-2 px-4 rounded hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_activity_logs' %}bg-gray-700{% endif %}">
+                            활동 내역
+                        </a>
+                    </li>
+                    <li class="p-2">
+                        <a href="{% url 'community_home' %}" class="block py-2 px-4 rounded hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_post_management' %}bg-gray-700{% endif %}">
+                            게시판 관리
+                        </a>
+                    </li>
+                    <li class="p-2">
+                        <a href="{% url 'admin_salary_management' %}" class="block py-2 px-4 rounded hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_salary_management' %}bg-gray-700{% endif %}">
+                            급여 관리
+                        </a>
+                    </li>
+                </ul>
+                <form action="{% url 'logout' %}" method="post" class="flex space-x-4">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center justify-center py-6 rounded-3xl bg-white p-2 hover:bg-blue-300">
+                        <img src="{% static 'images/admin_logout.png' %}" alt="Logout Icon" class="w-6 h-6">
+                    </button>
+                </form>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            {% block content %}
+            <!-- 페이지별 내용 -->
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-300 text-white text-center p-4">
+        <p>&copy; 2024 LLM Diary. All rights reserved.</p>
+    </footer>
+</body>
+</html>

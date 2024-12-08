@@ -20,15 +20,14 @@
 
         <!-- 메시지 표시 -->
         {% if messages %}
-            <div class="mb-6">
+            <div id="message-container" class="mb-4">
                 {% for message in messages %}
-                    {% if "로그인에 성공했습니다." in message %}
-                        <p class="text-red-500 text-center font-semibold">{{ message }}</p>
-                    {% endif %}
+                    <div class="text-sm rounded-lg text-center{% if message.tags == 'success' %} bg-green-100 text-green-800{% elif message.tags == 'error' %} text-red-800{% elif message.tags == 'info' %}text-blue-800{% endif %}">
+                        {{ message }}
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
-
         <!-- 로그인 폼 -->
         <form action="{% url 'login' %}" method="post" class="space-y-6">
             {% csrf_token %}

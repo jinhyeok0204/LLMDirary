@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -15,7 +16,7 @@ from kobert_tokenizer import KoBERTTokenizer
 
 bertmodel = BertModel.from_pretrained('skt/kobert-base-v1', return_dict=False)
 model = BERTClassifier(bertmodel, hidden_size=768, num_classes=6, dr_rate=0.5)
-save_path = "./bert_classifier_model.pt"
+save_path = "./koBERT-emotion/bert_classifier_model.pt"
 state_dict = torch.load(save_path, map_location=torch.device('cpu'))
 model.load_state_dict(state_dict)
 model.eval()
@@ -24,7 +25,9 @@ tokenizer = KoBERTTokenizer.from_pretrained('skt/kobert-base-v1')
 
 emotions = ('anger', 'sadness', 'anxiety', 'hurt', 'embarrassment', 'happiness')
 
+
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def diary_write_view(request):
     if request.method == 'POST':
         form = DiaryForm(request.POST)
@@ -79,6 +82,7 @@ def diary_home_view(request):
 
 
 @login_required()
+@transaction.atomic
 def diary_edit_view(request, diary_id):
     '''
     다이어리 수정 뷰
@@ -106,6 +110,7 @@ def diary_edit_view(request, diary_id):
 
 @login_required()
 @require_POST
+@transaction.atomic
 def diary_delete_view(request):
     '''
     특정 다이어리 삭제하는 뷰

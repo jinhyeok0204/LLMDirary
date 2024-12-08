@@ -1,0 +1,87 @@
+{% extends 'admin/admin_base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">가입 요청 관리</h1>
+
+    <!-- 상담사 요청 -->
+    <h2 class="text-xl font-semibold mb-4">상담사 가입 요청</h2>
+    {% if counselor_requests %}
+        <ul class="list-disc pl-5 space-y-4">
+            {% for counselor in counselor_requests %}
+            <li class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-medium">이름: {{ counselor.id.name }}</p>
+                    <p class="text-gray-500 text-sm">성별: {{ counselor.get_gender_display }}</p>
+                </div>
+                <div>
+                    <button onclick="updateStatus('counselor', {{ counselor.id.id }}, 'approve')"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        승인
+                    </button>
+                    <button onclick="updateStatus('counselor', {{ counselor.id.id }}, 'reject')"
+                            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                        거절
+                    </button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-gray-600">승인 대기 중인 상담사 요청이 없습니다.</p>
+    {% endif %}
+
+    <!-- 고객 지원 요청 -->
+    <h2 class="text-xl font-semibold mb-4 mt-8">고객 지원 가입 요청</h2>
+    {% if support_requests %}
+        <ul class="list-disc pl-5 space-y-4">
+            {% for support in support_requests %}
+            <li class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-medium">이름: {{ support.id.name }}</p>
+                    <p class="text-gray-500 text-sm">월급: ${{ support.salary }}</p>
+                </div>
+                <div>
+                    <button onclick="updateStatus('customer_support', {{ support.id.id }}, 'approve')"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        승인
+                    </button>
+                    <button onclick="updateStatus('customer_support', {{ support.id.id }}, 'reject')"
+                            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                        거절
+                    </button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-gray-600">승인 대기 중인 고객 지원 요청이 없습니다.</p>
+    {% endif %}
+</div>
+
+<!-- JavaScript -->
+<script>
+    function updateStatus(role, personId, action) {
+        fetch(`/admin/join-requests/${role}/${personId}/${action}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`${role} 요청이 승인되었습니다.`);
+                location.reload(); // 새로고침
+            } else {
+                alert(`오류 발생: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('요청 처리 중 오류가 발생했습니다.');
+        });
+    }
+</script>
+{% endblock %}

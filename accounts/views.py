@@ -1,10 +1,11 @@
+from django.db import transaction
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from accounts.models import Person, User, Counselor, CustomerSupport
-from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.contrib.sessions.models import Session
 
 
 def login_view(request):
@@ -14,13 +15,28 @@ def login_view(request):
         user = authenticate(request, login_id=login_id, password=login_pw)
 
         if user is not None:
-            # 로그인 성공
-            login(request, user)
-            messages.success(request, "로그인에 성공했습니다.")
-
-            # 역할에 따른 redirect
             try:
+                # Person 객체를 먼저 가져옴
                 person = Person.objects.get(pk=user.pk)
+
+                # 조건에 따라 관련 모델을 로드
+                if person.role == 'counselor':
+                    counselor = Counselor.objects.select_related('id').get(id=person)
+                    if not counselor.is_approved:
+                        messages.error(request, "승인되지 않은 상담사 계정입니다. 관리자에게 문의하세요.")
+                        return redirect('login')
+
+                elif person.role == 'customer_support':
+                    customer_support = CustomerSupport.objects.select_related('id').get(id=person)
+                    if not customer_support.is_approved:
+                        messages.error(request, "승인되지 않은 고객 지원 계정입니다. 관리자에게 문의하세요.")
+                        return redirect('login')
+
+                # 로그인 성공
+                login(request, user)
+                messages.success(request, "로그인에 성공했습니다.")
+
+                # 역할에 따른 redirect
                 if person.role == 'admin':
                     return redirect('admin_home')
                 elif person.role == 'customer_support':
@@ -29,9 +45,11 @@ def login_view(request):
                     return redirect('counselor_home')
                 else: # user
                     return redirect('home')
-            except Person.DoesNotExist:
+
+            except(Person.DoesNotExist, Counselor.DoesNotExist, CustomerSupport.DoesNotExist):
                 messages.error(request, "사용자 정보에 문제가 있습니다.")
                 return redirect('login')
+
         else:
             messages.error(request, "로그인 ID 또는 비밀번호가 잘못되었습니다.")
             return redirect('login')
@@ -39,6 +57,7 @@ def login_view(request):
     return render(request, 'accounts/login.html')
 
 
+@transaction.atomic
 def signup_view(request):
     if request.method == 'POST':
         # 공통 필드 가져오기
@@ -101,59 +120,6 @@ def signup_view(request):
 @login_required
 def logout_view(request):
     logout(request)
+    Session.objects.all().delete()
     messages.success(request, "로그아웃 되었습니다.")
     return redirect('login')
-
-
-# 사용자 대시보드 (User 전용)
-@login_required
-def user_home(request):
-    person = Person.objects.get(id=request.user.id)
-    if person.role != 'user':
-        return HttpResponseForbidden("일반 사용자만 접근 가능합니다.")
-
-    user = User.objects.get(id=person)
-    return render(request, 'user/home.html', {'person': person, 'user': user})
-
-
-# 관리자 대시보드 (Admin 전용)
-@login_required
-def admin_dashboard(request):
-    person = request.user
-    person = Person.objects.get(id=request.user.id)
-    if not person.is_staff:
-        return HttpResponseForbidden("관리자만 접근 가능합니다.")
-
-    # 관리자 관련 데이터
-    counselors = Counselor.objects.filter(admin=person)
-    customer_supports = CustomerSupport.objects.filter(admin=person)
-    return render(request, 'admin/admin_home.html', {
-        'person': person,
-        'counselors': counselors,
-        'customer_supports': customer_supports,
-    })
-
-
-# 상담사 대시보드 (Counselor 전용)
-@login_required
-def counselor_dashboard(request):
-    person = Person.objects.get(id=request.user.id)
-    if person.role != 'counselor':
-        return HttpResponseForbidden("상담사만 접근 가능합니다.")
-
-    counselor = Counselor.objects.get(id=person)
-    return render(request, 'accounts/counselor_dashboard.html', {'person': person, 'counselor': counselor})
-
-
-# 고객 지원 대시보드 (Customer Support 전용)
-@login_required
-def customer_support_dashboard(request):
-    person = Person.objects.get(id=request.user.id)
-    if person.role != 'customer_support':
-        return HttpResponseForbidden("고객 지원 담당자만 접근 가능합니다.")
-
-    customer_support = CustomerSupport.objects.get(id=person)
-    return render(request, 'accounts/customer_support_dashboard.html',
-                  {'person': person, 'customer_support': customer_support})
-
-

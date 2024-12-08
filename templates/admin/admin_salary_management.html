@@ -1,0 +1,50 @@
+{% extends 'admin/admin_base.html' %}
+{% block content %}
+<div class="container mx-auto p-8">
+    <h1 class="text-2xl font-bold mb-6">급여 관리</h1>
+
+    <!-- 검색 및 필터링 -->
+    <form method="get" class="mb-6 flex space-x-4">
+        <input type="text" name="query" placeholder="고객 지원 담당자 이름 검색"
+               class="border border-gray-300 rounded-lg px-4 py-2">
+        <input type="number" name="min_salary" placeholder="최소 급여"
+               class="border border-gray-300 rounded-lg px-4 py-2">
+        <input type="number" name="max_salary" placeholder="최대 급여"
+               class="border border-gray-300 rounded-lg px-4 py-2">
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">검색</button>
+    </form>
+
+    <!-- 급여 목록 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-100 text-left">
+                    <th class="p-4">이름</th>
+                    <th class="p-4">급여</th>
+                    <th class="p-4">조정</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for support in supports %}
+                <tr class="border-t">
+                    <td class="p-4">{{ support.id.name }}</td>
+                    <td class="p-4">{{ support.salary }}₩</td>
+                    <td class="p-4">
+                        <form method="post" action="{% url 'admin_update_salary' support.id.id %}" class="inline-block">
+                            {% csrf_token %}
+                            <input type="number" name="new_salary" placeholder="새 급여"
+                                   class="border border-gray-300 rounded-lg px-2 py-1 w-20">
+                            <button type="submit" class="bg-green-600 text-white px-3 py-1 rounded-lg shadow hover:bg-green-700">업데이트</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-gray-500 p-4">검색 결과가 없습니다.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", include("admin.urls")),
     path("accounts/", include("accounts.urls")),
     path("", include("home.urls")), # accounts 앱의 URL 포함
     path("diary/", include('diary.urls')),

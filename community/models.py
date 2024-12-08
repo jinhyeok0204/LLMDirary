@@ -9,6 +9,7 @@ class Post(models.Model):
     post_write_datetime = models.DateTimeField(auto_now_add=True)
     post_title = models.CharField(max_length=40, default="")
     post_content = models.TextField()
+    is_pinned = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Post by {self.post_publisher.name} on {self.post_write_datetime}"

@@ -3,16 +3,26 @@
 {% block content %}
 <div class="container mx-auto p-8">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl mx-auto">
-        <!-- 삭제 버튼 (작성자만 표시) -->
-        {% if post.post_publisher == request.user %}
-        <div class="flex justify-end">
+    <!-- 게시글 핀 및 삭제 버튼 -->
+    {% if can_pin or post.post_publisher == request.user or request.user.role == 'customer_support' or request.user.role == 'admin' %}
+        <div class="flex justify-end space-x-4">
+            {% if can_pin %}
+            <form method="post" action="">
+                {% csrf_token %}
+                <button name="pin_post" class="bg-yellow-500 text-center text-white px-4 py-2 rounded-lg shadow hover:bg-yellow-600">
+                    {% if post.is_pinned %} 공지 해제 {% else %} 공지 등록 {% endif %}
+                </button>
+            </form>
+            {% endif %}
+            {% if post.post_publisher == request.user or request.user.role == 'customer_support' or request.user.role == 'admin' %}
             <form id="delete-post-form" method="post" action="{% url 'community_delete' post.post_id %}">
                 {% csrf_token %}
                 <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700"
                         onclick="confirmPostDelete()">게시글 삭제</button>
             </form>
+            {% endif %}
         </div>
-        {% endif %}
+    {% endif %}
 
         <!-- 게시글 내용 -->
         <h1 class="text-3xl font-bold text-purple-700">{{ post.post_title }}</h1>
@@ -33,7 +43,7 @@
                     <p class="text-gray-800"><strong>{{ comment.user.id.login_id }}</strong>: {{ comment.post_comment_content }}</p>
                     <p class="text-sm text-gray-500">{{ comment.post_comment_write_datetime|date:"Y년 m월 d일 H:i:s" }}</p>
                 </div>
-            {% if comment.user.id.id == request.user.id %}
+            {% if comment.user.id.id == request.user.id or request.user.role == 'customer_support' or request.user.role == 'admin' %}
             <!-- 삭제 버튼 -->
             <form method="post" action="{% url 'comment_delete' post.post_id comment.post_comment_id%}" class="inline">
                 {% csrf_token %}
@@ -42,18 +52,28 @@
             {% endif %}
             </li>
             {% empty %}
-            <li class="text-gray-500">댓글이 없습니다. 첫 댓글을 작성해보세요!</li>
+            {% if can_comment %}
+                <li class="text-gray-500">댓글이 없습니다. 첫 댓글을 작성해보세요!</li>
+            {% else %}
+                <li class="text-gray-500">작성된 댓글이 없습니다.</li>
+            {% endif %}
             {% endfor %}
         </ul>
-
-        <!-- 댓글 작성 폼 -->
-        <form method="post" class="mt-6">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
-                댓글 작성
-            </button>
-        </form>
+        {% if can_comment %}
+            <!-- 댓글 작성 폼 -->
+            <form method="post" class="mt-6">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+                    댓글 작성
+                </button>
+            </form>
+        {% endif %}
+    </div>
+    <div class="text-center mt-10">
+        <a href="{% url 'community_home' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700">
+            뒤로가기
+        </a>
     </div>
 </div>
 <script>
