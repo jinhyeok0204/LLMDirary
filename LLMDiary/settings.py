@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     "accounts",
     "analysis",
     "counsel",
+    "counselor",
     "diary",
     "home",
     "profiles",
-    "community"
+    "community",
 ]
 
 MIDDLEWARE = [

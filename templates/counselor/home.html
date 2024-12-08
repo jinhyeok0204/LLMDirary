@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold text-center mb-4">나의 일정</h1>
+
+    <!-- 이전 달, 다음 달 이동 버튼 -->
+    <div class="flex justify-between mb-4">
+        <a href="#" onclick="changeMonth(-1)" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            이전 달
+        </a>
+        <span class="text-xl font-semibold">{{ year }}년 {{ month }}월</span>
+        <a href="#" onclick="changeMonth(1)" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            다음 달
+        </a>
+    </div>
+
+    <!-- 캘린더 -->
+    <table id="calendar" class="table-auto border-collapse w-full text-center">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="border px-4 py-2">일</th>
+                <th class="border px-4 py-2">월</th>
+                <th class="border px-4 py-2">화</th>
+                <th class="border px-4 py-2">수</th>
+                <th class="border px-4 py-2">목</th>
+                <th class="border px-4 py-2">금</th>
+                <th class="border px-4 py-2">토</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day, weekday in days %}
+            {% if forloop.counter0|divisibleby:7 %}
+            <tr>
+            {% endif %}
+            <td class="border p-2">
+                {% if day > 0 %}
+                <div class="font-bold text-lg mb-2">
+                    <span>{{ day }}</span>
+                </div>
+                <div class="relative">
+                    {% with schedules=schedule_dict|get_item:day %}
+                    {% if schedules %}
+                    <ul class="space-y-2">
+                        {% for schedule in schedules|slice:":3" %}
+                        <li class="p-1 rounded group relative
+                            {% if schedule.is_complete %}
+                            bg-gray-400 text-white
+                            {% elif schedule.is_appointment %}
+                            bg-green-200 text-green-800
+                            {% else %}
+                            bg-yellow-200 text-yellow-800
+                            {% endif %}
+                        ">
+                            <!-- 툴팁 -->
+                            <div class="absolute left-1 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block p-3 rounded text-lg
+                                {% if schedule.is_complete %}
+                                bg-gray-400 text-white
+                                {% elif schedule.is_appointment %}
+                                bg-green-200 text-green-800
+                                {% else %}
+                                bg-yellow-200 text-yellow-800
+                                {% endif %}
+                            ">
+                                <span>{{ schedule.user.id.name }} </span>
+                                <span class="font-bold">
+                                    {% if schedule.is_complete %}
+                                    (완료)
+                                    {% elif schedule.is_appointment %}
+                                    (예약)
+                                    {% else %}
+                                    (대기)
+                                    {% endif %}
+                                </span>
+                                <br>
+                                <span>{{ schedule.counsel_datetime|date:"H:i" }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% endif %}
+            </td>
+            {% if forloop.counter0|add:1|divisibleby:7 %}
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function changeMonth(direction) {
+        // 현재 URL에서 year와 month를 쿼리 파라미터로 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentYear = parseInt(urlParams.get('year')) || {{ year }};
+        let currentMonth = parseInt(urlParams.get('month')) || {{ month }};
+
+        // 달 계산
+        currentMonth += direction;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear += 1;
+        } else if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear -= 1;
+        }
+
+        // 새로운 URL로 이동
+        window.location.href = `?year=${currentYear}&month=${currentMonth}`;
+    }
+</script>
+{% endblock %}

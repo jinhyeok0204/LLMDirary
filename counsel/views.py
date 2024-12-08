@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.core.paginator import EmptyPage
 from django.contrib import messages
+from django.db.models import Q
 
 @login_required(redirect_field_name='login')
 def counsel_home(request):
@@ -39,6 +40,7 @@ def counsel_home(request):
                     'counsel_id': counsel.counsel_id,
                     'counselor_name': counsel.counselor.id.name,
                     'counsel_datetime': counsel.counsel_datetime,
+                    'counselor_phone_number': counsel.counselor.id.phone_num,
                     'counsel_is_appointment': counsel.is_appointment,
                     'counsel_is_complete': counsel.is_complete,
                 }
@@ -59,6 +61,7 @@ def counsel_home(request):
                     'name': counselor.id.name,
                     'gender': '남자' if counselor.gender == 'M' else '여자',
                     'id': counselor.id.id,
+                    'phone_num': counselor.id.phone_num,
                 }
                 for counselor in counselor_page_obj
             ]
@@ -127,6 +130,7 @@ def counsel_detail(request):
         'counselor_name': counsel.counselor.id.name,
         'counsel_datetime': counsel.counsel_datetime,
         'counsel_content': counsel.counsel_content,
+        'counsel_counselor_gender': counsel.counselor.gender,
         'counsel_is_appointment': counsel.is_appointment,
         'counsel_is_complete': counsel.is_complete,
     })
@@ -139,3 +143,147 @@ def cancel_reservation(request):
         counsel.delete()  # 예약 삭제
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+@login_required(redirect_field_name='login')
+def counselor_counsel(request):
+    user = request.user
+
+    # 상담 내역: counselor_id가 본인이고 상담이 완료된 항목
+    completed_counsels = Counsel.objects.filter(
+        Q(counselor_id=user.id) & (Q(is_complete=True) | Q(is_appointment=True))
+    ).order_by('-counsel_datetime')
+
+    # 상담 대기 목록: counselor_id가 본인이고 is_appointment가 False인 항목
+    pending_counsels = Counsel.objects.filter(
+        counselor_id=user.id,
+        is_appointment=False
+    ).order_by('counsel_datetime')
+
+    # 페이지네이션 설정
+    completed_counsel_paginator = Paginator(completed_counsels, 3)
+    completed_page_number = request.GET.get('completed_page', 1)
+    try:
+        completed_page_obj = completed_counsel_paginator.get_page(completed_page_number)
+    except EmptyPage:
+        completed_page_obj = completed_counsel_paginator.get_page(1)
+
+    pending_counsel_paginator = Paginator(pending_counsels, 3)
+    pending_page_number = request.GET.get('pending_page', 1)
+    try:
+        pending_page_obj = pending_counsel_paginator.get_page(pending_page_number)
+    except EmptyPage:
+        pending_page_obj = pending_counsel_paginator.get_page(1)
+
+    # AJAX 요청인지 확인
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if 'completed_page' in request.GET:
+            completed_list = [
+                {
+                    'counsel_id': counsel.counsel_id,
+                    'user_name': counsel.user.id.name,
+                    'user_gender': counsel.user.gender,
+                    'counsel_datetime': counsel.counsel_datetime,
+                    'counsel_content': counsel.counsel_content,
+                    'counsel_complete': counsel.is_complete,
+                }
+                for counsel in completed_page_obj
+            ]
+            return JsonResponse({
+                'completed_counsels': completed_list,
+                'completed_has_previous': completed_page_obj.has_previous(),
+                'completed_has_next': completed_page_obj.has_next(),
+                'completed_previous_page_number': completed_page_obj.previous_page_number() if completed_page_obj.has_previous() else None,
+                'completed_next_page_number': completed_page_obj.next_page_number() if completed_page_obj.has_next() else None,
+                'completed_current_page': completed_page_obj.number,
+                'completed_total_pages': completed_page_obj.paginator.num_pages,
+            })
+        if 'pending_page' in request.GET:
+            pending_list = [
+                {
+                    'counsel_id': counsel.counsel_id,
+                    'user_name': counsel.user.id.name,
+                    'user_gender': counsel.user.gender,
+                    'counsel_datetime': counsel.counsel_datetime,
+                    'counsel_content': counsel.counsel_content,
+                }
+                for counsel in pending_page_obj
+            ]
+            return JsonResponse({
+                'pending_counsels': pending_list,
+                'pending_has_previous': pending_page_obj.has_previous(),
+                'pending_has_next': pending_page_obj.has_next(),
+                'pending_previous_page_number': pending_page_obj.previous_page_number() if pending_page_obj.has_previous() else None,
+                'pending_next_page_number': pending_page_obj.next_page_number() if pending_page_obj.has_next() else None,
+                'pending_current_page': pending_page_obj.number,
+                'pending_total_pages': pending_page_obj.paginator.num_pages,
+            })
+
+    return render(request, 'counsel/counselor_counsel.html', {
+        'completed_page_obj': completed_page_obj,
+        'pending_page_obj': pending_page_obj,
+    })
+
+@login_required(redirect_field_name='login')
+def accept_counsel(request):
+    if request.method == 'POST':
+        counsel_id = request.POST.get('counsel_id')
+        counsel = get_object_or_404(Counsel, pk=counsel_id)
+
+        # 상담 수락 처리
+        counsel.is_appointment = True
+        counsel.save()
+        messages.success(request, '상담을 수락했습니다.')
+        return JsonResponse({'success': True})
+    messages.error(request, '상담 수락에 실패했습니다.')
+    return JsonResponse({'success': False}, status=400)
+
+
+@login_required(redirect_field_name='login')
+def reject_counsel(request):
+    if request.method == 'POST':
+        counsel_id = request.POST.get('counsel_id')
+        counsel = get_object_or_404(Counsel, pk=counsel_id)
+
+        # 상담 거절 처리 (삭제 또는 다른 필드 수정)
+        counsel.delete()
+        messages.error(request, '상담을 거절했습니다.')
+        return JsonResponse({'success': True})
+    messages.error(request, '상담 거절에 실패했습니다.')
+    return JsonResponse({'success': False}, status=400)
+
+@login_required(redirect_field_name='login')
+def complete_counsel(request):
+    if request.method == 'POST':
+        counsel_id = request.POST.get('counsel_id')
+        counsel = get_object_or_404(Counsel, pk=counsel_id)
+
+        counsel.is_complete = True
+        counsel.save()
+        messages.success(request, '상담을 완료했습니다.')
+        return JsonResponse({'success': True})
+    messages.error(request, '상담 완료에 실패했습니다.')
+    return JsonResponse({'success': False}, status=400)
+
+@login_required(redirect_field_name='login')
+def change_counsel_date(request):
+    if request.method == 'POST':
+        counsel_id = request.POST.get('counsel_id')
+        counsel_date = request.POST.get('new_counsel_date')
+        counsel_hour = request.POST.get('new_counsel_hour')
+        counsel_minute = request.POST.get('new_counsel_minute')
+
+        # naive datetime 생성
+        naive_datetime = datetime.strptime(
+            f"{counsel_date} {counsel_hour}:{counsel_minute}", "%Y-%m-%d %H:%M"
+        )
+
+        # 시간대 인식 datetime으로 변환
+        new_counsel_date = make_aware(naive_datetime)
+
+        counsel = Counsel.objects.get(pk=counsel_id)
+        counsel.counsel_datetime = new_counsel_date
+        counsel.save()
+        messages.success(request, '일정 변경을 완료했습니다.')
+        return JsonResponse({'status': 'success'})
+    messages.error(request, '일정 변경에 실패했습니다.')
+    return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'})

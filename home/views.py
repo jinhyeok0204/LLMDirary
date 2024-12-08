@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from accounts.models import User, Person, Counselor
+from accounts.models import  Person
 from diary.models import Diary
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -32,17 +32,5 @@ def home_view(request):
         "user": user,
         "recent_diaries": recent_diaries,
         "emotion_totals": emotion_totals,
-        "person_role": person.role,
-    })
-
-def counselor_home(request):
-    person = Person.objects.get(id=request.user.id)
-    if person.role != 'counselor':
-        messages.error(request, "상담사만 접근 가능합니다.")
-
-    counselor = Counselor.objects.get(id=person)
-    return render(request, 'counselor/counselor_home.html', {
-        'person': person,
-        'counselor': counselor,
         "person_role": person.role,
     })

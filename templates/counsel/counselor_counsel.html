@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">상담 관리</h1>
+    <p class="text-gray-600 mb-8 text-center">상담 내역을 관리할 수 있어요!</p>
+
+    <div class="flex">
+        <!-- 왼쪽: 상담 내역 -->
+        <div class="w-1/2 pr-4">
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">상담 내역</h2>
+            <div id="completed-counsel-list" class="space-y-6">
+                {% for counsel in completed_page_obj %}
+                    <div class="bg-white shadow rounded-lg p-4 flex justify-between items-center">
+                        <div
+                            class="w-full cursor-pointer open-counsel-detail"
+                            data-counsel-id="{{ counsel.counsel_id }}"
+                            data-user-name="{{ counsel.user.id.name }}"
+                            data-gender="{{ counsel.user.gender }}"
+                            data-phone_num = "{{ counsel.user.id.phone_num }}"
+                            data-status="{{ counsel.is_complete }}"
+                            data-counsel-date="{{ counsel.counsel_datetime|date:"c" }}"
+                            data-counsel-content="{{ counsel.counsel_content }}">
+                            <p class="text-lg font-bold text-purple-700">
+                                {{ counsel.user.id.name }}
+                                {% if counsel.is_complete %}
+                                    (완료)
+                                {% else %}
+                                    (예약)
+                                {% endif %}
+                            </p>
+                            <p class="text-gray-800">상담 날짜: {{ counsel.counsel_datetime|date:"Y-m-d H:i" }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-gray-500">상담 내역이 없습니다.</p>
+                {% endfor %}
+            </div>
+
+            <!-- 상담 내역 페이지네이션 -->
+            <div class="mt-8 flex justify-center space-x-2">
+                <button id="completed-prev-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if completed_page_obj.has_previous %}
+                            data-page="{{ completed_page_obj.previous_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    이전
+                </button>
+
+                <span class="px-4 py-2 bg-gray-100 rounded counsel-page-info">{{ completed_page_obj.number }} / {{ completed_page_obj.paginator.num_pages }}</span>
+
+                <button id="completed-next-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if completed_page_obj.has_next %}
+                            data-page="{{ completed_page_obj.next_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    다음
+                </button>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 상담 대기 목록 -->
+        <div class="w-1/2 pl-4">
+            <h2 class="text-2xl font-bold text-purple-700 mb-4">상담 대기 목록</h2>
+            <div id="pending-counsel-list" class="space-y-6">
+                {% for counsel in pending_page_obj %}
+                    <div class="bg-white shadow rounded-lg p-4 flex justify-between items-center">
+                        <div
+                            class="w-full cursor-pointer open-pending-counsel-detail"
+                            data-counsel-id="{{ counsel.counsel_id }}"
+                            data-user-name="{{ counsel.user.id.name }}"
+                            data-gender="{{ counsel.user.gender }}"
+                            data-phone_num = "{{ counsel.user.id.phone_num }}"
+                            data-counsel-date="{{ counsel.counsel_datetime|date:"c" }}"
+                            data-counsel-content="{{ counsel.counsel_content }}">
+                            <p class="text-lg font-bold text-purple-700">
+                                {{ counsel.user.id.name }}
+                                {% if counsel.user.gender == "M" %} (남자)
+                                {% else %} (여자)
+                                {% endif %}
+                            </p>
+                            <p class="text-gray-800">상담 날짜: {{ counsel.counsel_datetime|date:"Y-m-d H:i" }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-gray-500">대기 중인 상담이 없습니다.</p>
+                {% endfor %}
+            </div>
+
+            <!-- 상담 대기 목록 페이지네이션 -->
+            <div class="mt-8 flex justify-center space-x-2">
+                <button id="pending-prev-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if pending_page_obj.has_previous %}
+                            data-page="{{ pending_page_obj.previous_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    이전
+                </button>
+
+                <span class="px-4 py-2 bg-gray-100 rounded counsel-page-info">{{ pending_page_obj.number }} / {{ pending_page_obj.paginator.num_pages }}</span>
+
+                <button id="pending-next-btn"
+                        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
+                        {% if pending_page_obj.has_next %}
+                            data-page="{{ pending_page_obj.next_page_number }}"
+                        {% else %}
+                            disabled
+                        {% endif %}>
+                    다음
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 상담 내역 팝업 -->
+<div id="counsel-detail-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white w-1/3 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-purple-700 mb-4 text-center">상담 상세 내역</h2>
+        <div id="counsel-detail-content" class="space-y-4">
+            <p><strong>상담자:</strong> <span id="modal-user-name"></span> (<span id="modal-counsel-status"></span>)</p>
+            <p><strong>성별:</strong> <span id="modal-gender"></span></p>
+            <p><strong>연락처:</strong> <span id="modal-phone-num"></span></p>
+            <div class="flex items-center">
+                <p><strong>상담 날짜:</strong> <span id="modal-counsel-date"></span></p>
+                <button type="button" id="change-date-btn" class="bg-white text-blue-500 px-4 py-2 rounded hover:bg-white hover:underline">변경</button>
+            </div>
+            <div>
+                <strong>상담 내용</strong>
+                <textarea id="modal-counsel-content" class="w-full mt-2 p-2 border border-gray-300 rounded bg-gray-100" rows="5" readonly></textarea>
+            </div>
+
+            <div id="date-edit-section" class="hidden mt-4">
+                <label for="new-counsel-date" class="text-gray-700">새 상담 날짜:</label>
+                <div class="flex items-center space-x-4 mt-2">
+                    <input type="date" id="new-counsel-date" class="w-1/2 p-2 border border-gray-300 rounded bg-gray-100">
+                    <select id="new-counsel-hour" name="counsel_hour" class="border rounded py-2 px-3">
+                    </select>
+                    <span>:</span>
+                    <select id="new-counsel-minute" name="counsel_minute" class="border rounded py-2 px-3">
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex mt-4">
+            <button type="button" id="close-modal" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">닫기</button>
+            <div class="ml-auto flex space-x-2">
+                <button type="button" id="counsel-save-change-btn" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 hidden">일정 저장</button>
+                <button type="button" id="complete-counsel-apply-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 hidden">상담 완료</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 상담 대기 목록 팝업 -->
+<div id="pending-counsel-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white w-1/3 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-purple-700 mb-4 text-center">상담 대기 상세 내역</h2>
+        <div id="pending-counsel-detail-content" class="space-y-4">
+            <p><strong>상담자:</strong> <span id="pending-modal-user-name"></span></p>
+            <p><strong>성별:</strong> <span id="pending-modal-gender"></span></p>
+            <p><strong>연락처:</strong> <span id="pending-modal-phone-num"></span></p>
+            <p><strong>신청 날짜:</strong> <span id="pending-modal-counsel-date"></span></p>
+            <div>
+                <strong>상담 내용</strong>
+                <textarea id="pending-modal-counsel-content" class="w-full mt-2 p-2 border border-gray-300 rounded bg-gray-100" rows="5" readonly></textarea>
+            </div>
+        </div>
+        <div class="flex mt-4">
+            <button type="button" id="pending-close-modal" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">닫기</button>
+            <div class="ml-auto flex space-x-2">
+                <button type="button" id="accept-counsel-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">수락</button>
+                <button type="button" id="reject-counsel-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">거절</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        function formatDateTime(dateTime) {
+            const date = new Date(dateTime);
+
+            // 년, 월, 일
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1; // 월은 0부터 시작하므로 +1 필요
+            const day = date.getDate();
+
+            // 시간, 분 (24시간 체계)
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            // 최종 포맷팅
+            return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+        }
+
+        function initializeTimeSelectors() {
+            const hourSelector = $("#new-counsel-hour");
+            const minuteSelector = $("#new-counsel-minute");
+
+            // 시간 초기화
+            hourSelector.empty();
+            for (let h = 0; h <= 23; h++) {
+                const formattedHour = h < 10 ? `0${h}` : h;
+                hourSelector.append(`<option value="${formattedHour}">${formattedHour}</option>`);
+            }
+
+            // 분 초기화
+            minuteSelector.empty();
+            for (let m = 0; m < 60; m+=10) {
+                const formattedMinute = m < 10 ? `0${m}` : m;
+                minuteSelector.append(`<option value="${formattedMinute}">${formattedMinute}</option>`);
+            }
+        }
+
+        // 상담 내역 페이지네이션: 이전/다음 버튼 클릭 시
+        $('#completed-prev-btn, #completed-next-btn').click(function() {
+            const page = $(this).data('page');
+            if (page) {
+                window.location.href = '?completed_page=' + page;
+            }
+        });
+
+        // 상담 대기 목록 페이지네이션: 이전/다음 버튼 클릭 시
+        $('#pending-prev-btn, #pending-next-btn').click(function() {
+            const page = $(this).data('page');
+            if (page) {
+                window.location.href = '?pending_page=' + page;
+            }
+        });
+
+        // 상담 내역 상세 팝업 열기
+        $('#completed-counsel-list').on('click', '.open-counsel-detail', function() {
+            const counselId = $(this).data('counsel-id');
+            const userName = $(this).data('user-name');
+            const gender = ($(this).data('gender')=="M") ? "남자" : "여자";
+            const counselStatus = ($(this).data('status')=="True") ? "완료" : "예약";
+            const counselDate = formatDateTime($(this).data('counsel-date'));
+            const counselContent = $(this).data('counsel-content');
+            const phone_num = $(this).data('phone_num');
+
+            // 팝업에 데이터 삽입
+            $('#modal-user-name').text(userName);
+            $('#modal-counsel-status').text(counselStatus);
+            $('#modal-gender').text(gender);
+            $('#modal-phone-num').text(phone_num);
+            $('#modal-counsel-date').text(counselDate);
+            $('#modal-counsel-content').val(counselContent);
+
+            // 완료 버튼 표시 (상담 완료가 아니면)
+            if (counselStatus === "예약") {
+                $('#complete-counsel-apply-btn').removeClass('hidden');
+                $('#complete-counsel-apply-btn').data('counsel-id', counselId);
+                $('#change-date-btn').removeClass('hidden');
+                $('#counsel-save-change-btn').data('counsel-id', counselId);
+            } else {
+                $('#complete-counsel-apply-btn').addClass('hidden');
+                $('#change-date-btn').addClass('hidden');
+                $('#counsel-save-change-btn').addClass('hidden');
+            }
+
+            // 팝업 열기
+            $('#counsel-detail-modal').removeClass('hidden');
+        });
+
+        // 팝업 닫기 버튼 클릭 시
+        $('#close-modal').click(function() {
+            $('#counsel-detail-modal').addClass('hidden');
+            $('#complete-counsel-apply-btn').addClass('hidden');
+            $('#change-date-btn').addClass('hidden');
+            $('#date-edit-section').addClass('hidden');
+            $('#counsel-save-change-btn').addClass('hidden');
+        });
+
+        $('#change-date-btn').click(function() {
+            // 날짜 입력란과 '일정 저장' 버튼 표시
+            $('#date-edit-section').removeClass('hidden');
+            $('#counsel-save-change-btn').removeClass('hidden');
+            $(this).addClass('hidden');
+
+            initializeTimeSelectors()
+
+            const today = new Date();
+            const utcOffset = 9 * 60;
+            const localToday = new Date(today.getTime() + utcOffset * 60 * 1000);
+            const formattedToday = localToday.toISOString().split("T")[0];
+
+            // 날짜 및 시간 입력란에 최소값 설정
+            $("#new-counsel-date").attr("min", formattedToday);
+            $('#new-counsel-hour, #new-counsel-minute').prop('disabled', true);
+        });
+
+        $("#new-counsel-date").on("change", function () {
+            const selectedDate = $(this).val();
+            const now = new Date();
+            const utcOffset = 9 * 60;
+            const localnow = new Date(now.getTime() + utcOffset * 60 * 1000);
+            const currentDate = localnow.toISOString().split("T")[0];
+
+            if (selectedDate === currentDate) {
+                // 오늘 날짜라면 현재 시간 이후만 허용
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                // 시간 옵션 업데이트 및 디폴트 설정
+                let defaultHourSet = false;
+                $("#new-counsel-hour option").each(function () {
+                    const hour = parseInt($(this).val(), 10);
+                    const isDisabled = hour < currentHour; // 현재 시간 이전 비활성화
+                    $(this).prop("disabled", isDisabled);
+
+                    if (!isDisabled && !defaultHourSet) {
+                        $(this).prop("selected", true); // 기본값으로 설정
+                        defaultHourSet = true;
+                    }
+                });
+
+                // 분 옵션 업데이트
+                const selectedHour = parseInt($("#new-counsel-hour").val(), 10);
+                let defaultMinuteSet = false;
+                $("#new-counsel-minute option").each(function () {
+                    const minute = parseInt($(this).val(), 10);
+                    const isDisabled = (selectedHour === currentHour && minute < currentMinute);
+                    $(this).prop("disabled", isDisabled);
+
+                    if (!isDisabled && !defaultMinuteSet) {
+                        $(this).prop("selected", true); // 기본값으로 설정
+                        defaultMinuteSet = true;
+                    }
+                });
+            } else {
+                // 다른 날짜는 제한 없음
+                $("#new-counsel-hour option, #new-counsel-minute option").prop("disabled", false);
+
+                // 기본값 설정
+                $("#new-counsel-hour option:first").prop("selected", true);
+                $("#new-counsel-minute option:first").prop("selected", true);
+            }
+
+            // 시간 필드 활성화
+            $("#new-counsel-hour, #new-counsel-minute").prop("disabled", false);
+        });
+
+        $("#new-counsel-hour").on("change", function () {
+            const selectedDate = $("#new-counsel-date").val();
+            const now = new Date();
+            const currentDate = now.toISOString().split("T")[0];
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const selectedHour = parseInt($(this).val(), 10);
+
+            if (selectedDate === currentDate && selectedHour === currentHour) {
+                // 오늘 날짜이며 현재 시간 선택 시 분 제한
+                let defaultMinuteSet = false;
+                $("#new-counsel-minute option").each(function () {
+                    const minute = parseInt($(this).val(), 10);
+                    const isDisabled = minute < currentMinute;
+                    $(this).prop("disabled", isDisabled);
+
+                    if (!isDisabled && !defaultMinuteSet) {
+                        $(this).prop("selected", true); // 기본값으로 설정
+                        defaultMinuteSet = true;
+                    }
+                });
+            } else {
+                // 다른 경우 분 제한 없음
+                $("#new-counsel-minute option").prop("disabled", false);
+
+                // 기본값 설정
+                $("#new-counsel-minute option:first").prop("selected", true);
+            }
+        });
+
+        // 일정 저장 버튼 클릭 시
+        $('#counsel-save-change-btn').click(function() {
+            const newCounselDate = $('#new-counsel-date').val();
+            const newCounselHour = $('#new-counsel-hour').val();
+            const newCounselMinute = $('#new-counsel-minute').val();
+            const counselId = $(this).data('counsel-id');
+
+            // 서버에 날짜 변경 요청 (AJAX 등)
+            $.ajax({
+                url: '{% url "change_counsel_date" %}',  // 날짜 변경을 처리할 URL
+                type: 'POST',
+                data: {
+                    counsel_id: counselId,
+                    new_counsel_date: newCounselDate,
+                    new_counsel_hour: newCounselHour,
+                    new_counsel_minute: newCounselMinute,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    location.reload();
+                },
+            });
+        });
+
+        // 완료 버튼 클릭 시
+        $('#complete-counsel-apply-btn').click(function() {
+            const counselId = $(this).data('counsel-id');
+
+            // 서버에 상담 완료 처리 요청 (AJAX 등)
+            $.ajax({
+                url: '{% url "complete_counsel" %}',
+                type: 'POST',
+                data: {
+                    counsel_id: counselId,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    location.reload();
+                },
+            });
+        });
+
+        // 상담 대기 목록 상세 팝업 열기
+        $('#pending-counsel-list').on('click', '.open-pending-counsel-detail', function() {
+            const counselId = $(this).data('counsel-id');
+            const userName = $(this).data('user-name');
+            const gender = ($(this).data('gender') === "M") ? "남자" : "여자";
+            const counselDate = formatDateTime($(this).data('counsel-date'));
+            const counselContent = $(this).data('counsel-content');
+            const phone_num = $(this).data('phone_num');
+
+            // 팝업에 데이터 삽입
+            $('#pending-modal-user-name').text(userName);
+            $('#pending-modal-gender').text(gender);
+            $('#pending-modal-phone-num').text(phone_num);
+            $('#pending-modal-counsel-date').text(counselDate);
+            $('#pending-modal-counsel-content').val(counselContent);
+            $('#accept-counsel-btn').data('counsel-id', counselId);
+            $('#reject-counsel-btn').data('counsel-id', counselId);
+
+            // 팝업 열기
+            $('#pending-counsel-modal').removeClass('hidden');
+        });
+
+        // 팝업 닫기 버튼 클릭 시
+        $('#pending-close-modal').click(function() {
+            $('#pending-counsel-modal').addClass('hidden');
+        });
+
+        // 수락 버튼 클릭 시
+        $('#accept-counsel-btn').click(function() {
+            const counselId = $(this).data('counsel-id');
+
+            $.ajax({
+                url: '{% url "accept_counsel" %}',
+                type: 'POST',
+                data: {
+                    counsel_id: counselId,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    location.reload();
+                },
+            });
+        });
+
+        // 거절 버튼 클릭 시
+        $('#reject-counsel-btn').click(function() {
+            const counselId = $(this).data('counsel-id');
+
+            $.ajax({
+                url: '{% url "reject_counsel" %}',
+                type: 'POST',
+                data: {
+                    counsel_id: counselId,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(response) {
+                    location.reload();
+                },
+            });
+        });
+    });
+</script>
+
+{% endblock %}
