@@ -22,6 +22,6 @@ def download_state_dict(url, save_path):
 if __name__ == "__main__":
     # 다운로드 URL 및 저장 경로
     url = "https://huggingface.co/xxhyeok/koBERT-emotion/resolve/main/bert_classifier_model.pt"
-    save_path = "./bert_classifier_model.pt"
+    save_path = "koBERT-emotion/bert_classifier_model.pt"
 
     download_state_dict(url, save_path)
