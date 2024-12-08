@@ -1,23 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<style>
-    .heatmap-container {
-        width: 80%;
-        height: 300px; /* 고정 높이 */
-}
 
-    .heatmap-tooltip {
-        font-size: 14px;
-        font-family: Arial, sans-serif;
-}
 </style>
-<div class="w-full max-w-7xl mx-auto grid grid-cols-1 gap-6 md:grid-rows-2">
+
+<div class="w-full max-w-7xl mx-auto grid grid-rows-2 gap-4 h-screen">
     <!-- 상단: 최근 일기와 감정 통계 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow-md p-6 overflowgrid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- 최근 작성한 일기 -->
         <div class="bg-white rounded-xl shadow-md p-6 h-[400px] flex flex-col">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">최근 작성한 일기</h2>
+            <h2 class="text-xl text-center font-semibold text-gray-800 mb-4">1주일간 작성한 일기</h2>
             <div class="flex-1 overflow-y-auto">
                 {% if recent_diaries %}
                     <ul class="space-y-4">
@@ -34,68 +26,77 @@
                 {% endif %}
             </div>
         </div>
-
-        <!-- 감정 통계 -->
-        <div class="bg-white rounded-xl shadow-md p-6 h-[400px] flex flex-col">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">감정 통계</h2>
-            <div class="flex-1 grid grid-cols-3 gap-4">
-                {% for emotion, score in emotion_statistics.items %}
-                <div class="bg-purple-50 text-purple-700 p-4 rounded-lg text-center shadow-sm">
-                    <p class="font-semibold">{{ emotion }}</p>
-                    <p class="text-lg font-bold">{{ score }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
     </div>
-
-    <!-- 하단: 히트맵 -->
-    <div class="bg-white rounded-xl shadow-md p-6 h-[420px]">
-        <div id="cal-heatmap" class="w-[400px] flex-1"></div>
+    <!-- 감정 통계 -->
+    <div class="bg-white rounded-xl shadow-md p-6 flex flex-col justify-center">
+        <h2 class="text-xl text-center font-semibold text-gray-800 mb-4">한달간 감정 통계</h2>
+        <!-- 막대그래프 캔버스 -->
+        <div class="w-full h-full flex-1">
+            <canvas id="emotionBarChart"></canvas>
+        </div>
     </div>
 </div>
 
-<!-- JavaScript for Heatmap -->
-<script src="https://unpkg.com/cal-heatmap/dist/cal-heatmap.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/cal-heatmap/dist/cal-heatmap.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        {#const rawData = JSON.parse('{{ heatmap_data|safe }}'); // JSON 데이터 로드#}
-        {#const heatmapData = Object.fromEntries(#}
-        {#    Object.entries(rawData).map(([key, value]) => [new Date(key).getTime() / 1000, value])#}
-        {#)#}
-        const heatmapData = {
-                1730851200: 1,
-                1733011200: 1,
-                1733097600: 1,
-                1733356800: 1
-        };
-        console.log(heatmapData)
+        // 감정 데이터 서버에서 가져오기
+        const emotionData = {{ emotion_data|safe }};
 
-        const heatmap = new CalHeatmap();
+        // 데이터 처리
+        const labels = Object.keys(emotionData); // 감정 이름
+        const data = Object.values(emotionData); // 감정 점수
 
-        heatmap.paint({
-            range:1,
-            domain:{type:"month", sort: "asc" },
-            subDomain: {type:"day", radius:5,},
+        // 그래프 생성
+        const ctx = document.getElementById('emotionBarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
             data: {
-                source: heatmapData,
-                type: "json",
+                labels: labels,
+                datasets: [{
+                    label: '감정 빈도',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                    ],
+                    borderWidth: 1
+                }]
             },
-            container: "#cal-heatmap",
-            date:{
-                start: new Date(new Date().setFullYear(new Date().getFullYear())),
-            },
-            theme: 'light',
-            scale:{
-                color:{
-                    range: ['yellow', "orange", 'red'],
-                    domain:[0, 5],
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}회`;
+                            }
+                        }
+                    }
                 }
-            },
-            itemSelector: "#cal-heatmap",
+            }
         });
-
     });
 </script>
+
 {% endblock %}

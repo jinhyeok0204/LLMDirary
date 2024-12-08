@@ -22,6 +22,7 @@
     <orderEntry type="library" name="d3.v7" level="application" />
     <orderEntry type="library" name="jquery-3.6.0" level="application" />
     <orderEntry type="library" name="cal-heatmap" level="application" />
+    <orderEntry type="library" name="chart.js" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />

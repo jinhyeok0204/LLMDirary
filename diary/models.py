@@ -2,6 +2,7 @@ from django.db import models
 from accounts.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
 class EmotionAnalysis(models.Model):
     emotion_id = models.AutoField(primary_key=True)
     happiness_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])

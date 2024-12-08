@@ -38,7 +38,7 @@
         <p class="text-sm text-gray-500">역할: {{ request.user.get_role_display }}</p>
 
         <!-- Navigation Menu -->
-        <nav class="mt-10 w-full px-4">
+        <nav class="sticky top-0 bg-white shadow-md z-10 w-full mt-10 px-4">
             <ul class="space-y-6">
                 {% if user.role == 'admin' %}
                     <li>
@@ -215,6 +215,5 @@
     <footer class="bg-gray-800 text-white text-center p-4">
         <p>&copy; 2024 LLM Diary. All rights reserved.</p>
     </footer>
-
 </body>
 </html>
