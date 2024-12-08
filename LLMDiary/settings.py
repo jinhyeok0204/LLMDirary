@@ -40,10 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "accounts",
     "counsel",
+    "counselor",
     "diary",
     "home",
     "profiles",
-    "community"
+    "community",
 ]
 
 MIDDLEWARE = [
