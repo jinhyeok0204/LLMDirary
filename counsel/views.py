@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -84,6 +86,7 @@ def counsel_home(request):
     })
 
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def counsel_apply(request):
     if request.method == 'POST':
         user = request.user
@@ -135,7 +138,9 @@ def counsel_detail(request):
         'counsel_is_complete': counsel.is_complete,
     })
 
+
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def cancel_reservation(request):
     if request.method == 'POST':
         counsel_id = request.POST.get('counsel_id')
@@ -143,6 +148,8 @@ def cancel_reservation(request):
         counsel.delete()  # 예약 삭제
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+
 
 @login_required(redirect_field_name='login')
 def counselor_counsel(request):
@@ -224,6 +231,7 @@ def counselor_counsel(request):
     })
 
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def accept_counsel(request):
     if request.method == 'POST':
         counsel_id = request.POST.get('counsel_id')
@@ -239,6 +247,7 @@ def accept_counsel(request):
 
 
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def reject_counsel(request):
     if request.method == 'POST':
         counsel_id = request.POST.get('counsel_id')
@@ -251,7 +260,9 @@ def reject_counsel(request):
     messages.error(request, '상담 거절에 실패했습니다.')
     return JsonResponse({'success': False}, status=400)
 
+
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def complete_counsel(request):
     if request.method == 'POST':
         counsel_id = request.POST.get('counsel_id')
@@ -264,7 +275,9 @@ def complete_counsel(request):
     messages.error(request, '상담 완료에 실패했습니다.')
     return JsonResponse({'success': False}, status=400)
 
+
 @login_required(redirect_field_name='login')
+@transaction.atomic
 def change_counsel_date(request):
     if request.method == 'POST':
         counsel_id = request.POST.get('counsel_id')
